@@ -2,8 +2,8 @@
  * MuscleFriend
  * 30日チャレンジお助けボット
  * 
- * node v12.18.3
- * npm 6.14.6
+ * node v12.18.3  - v8.10.0
+ * npm 6.14.6  - 3.5.2
  ******************* */
 
 "use strict";
@@ -16,20 +16,17 @@ const fs = require("fs");
 const token = process.env.BOT_TOKEN;
 /** bot */
 // const bot = new Eris(token);
-const bot = new Eris.CommandClient(token, {}, {
-    description: "A test bot made with Eris",
-    owner: "somebody",
-    prefix: "!"
-});
+const bot = new Eris.Client(token);
 
-// const bot_id = process.env.BOT_USER_ID;//botuserid
+/** BOT Client ID */
+const bot_id = process.env.BOT_USER_ID;
 
 /** みんなのデータ */
 const filename = "muscle_data.json";
 // const bkup = "\\\\MYNAS_1\\share1\\bkup\\" + filename;//jsonbkupファイル
 
 /** rooms */
-// const roomIds = process.env.ROOMS.split(' ');
+const roomIds = process.env.ROOMS.split(' ');
 // const target_room = roomIds[0];//イラスト雑談部屋
 // const target_room2 = "404125153627340802";//イラストうｐ部屋
 const odai_max = 20;
@@ -130,30 +127,7 @@ bot.on("ready", () => {
     console.log("Ready...");
 });
 
-bot.registerCommand("ping", "Pong!", { // Make a ping command
-    // Responds with "Pong!" when someone says "!ping"
-        description: "Pong!",
-        fullDescription: "This command could be used to check if the bot is up. Or entertainment when you're bored.",
-        reactionButtons: [ // Add reaction buttons to the command
-            {
-                emoji: "⬅",
-                type: "edit",
-                response: (msg) => { // Reverse the message content
-                    return msg.content.split().reverse().join();
-                }
-            },
-            {
-                emoji: "🔁",
-                type: "edit", // Pick a new pong variation
-                response: ["Pang!", "Peng!", "Ping!", "Pong!", "Pung!"]
-            },
-            {
-                emoji: "⏹",
-                type: "cancel" // Stop listening for reactions
-            }
-        ],
-        reactionButtonTimeout: 30000 // After 30 seconds, the buttons won't work anymore
-    });
+
 
 //メッセージ投げられたら
 bot.on("messageCreate", msg => {
@@ -162,61 +136,30 @@ bot.on("messageCreate", msg => {
         // bot.createMessage(msg.channel.id, `${msg.author.mention} テスト`);
         
         
-        // if(roomIds.includes(msg.channel.id)){//特定チャンネルでしか有効にしない
+        if(roomIds.includes(msg.channel.id)){
+            //特定チャンネルのみ
 
-        //     //botへのメンションに反応
-        //     if (msg.mentions.length > 0 && msg.mentions[0].id === bot_id){
-        //         //コマンドヘルプ
-        //         if(msg.content.match(/(?:コマンド|こまんど|ｺﾏﾝﾄﾞ|commands?)/g)){
-        //             bot.createMessage(msg.channel.id, cmd_help);
-        //         }else if(msg.content.match(/(username) (.*)/) && admins.includes(msg.author.id)){
-        //             //BOTのユーザー情報変更（管理者のみ）
-        //             let changedata =  msg.content.match(/(username) (.*)/);
-        //             bot.editSelf({username: changedata[2]})
-        //                 .then((v) => {
-        //                     bot.createMessage(msg.channel.id, 'ユーザー名を変更しました');
-        //                 })
-        //                 .catch((err) => {
-        //                     bot.createMessage(msg.channel.id, `${msg.author.mention} ${err.message}`);
-        //                 });
-        //         }
+            //botへのメンションに反応
+            if (msg.mentions.length > 0 && msg.mentions[0].id === bot_id){
+                
+                //おわったー
+                if(msg.content.match(/(?:やった|おわった|done|おわり?)/g)){
+                    let awesomeReplies = ["えらい！", "さすが！", "よくやった！", "がんばったね", "すばらしいっ", "さいこー！"];
+                    bot.createMessage(msg.channel.id, awesomeReplies[Math.floor(Math.random() * awesomeReplies.length)]);
+                    
+                    let awesomeReactions = ["✨", "💯", "🎉"];
+                    msg.addReaction(awesomeReactions[Math.floor(Math.random() * awesomeReactions.length)]);
+                }
 
-        //         //画像ファイルが一つ添付されていたら
-        //         if (msg.attachments.length == 1 && msg.attachments[0].filename.match(/.+\.(?:jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF)$/)){
-        //             const data = JSON.parse(fs.readFileSync(filename,"utf8"));
-        //             let target = data.kako_list[check_duplicate(data.odai_main.odai,data.kako_list)].image;
-        //             let hit_flg = false;
-        //             for(let i = 0, l = target.length; i < l; i++){
-        //                 if(msg.author.id === target[i].number){
-        //                     bot.createMessage(msg.channel.id, `${msg.author.mention} すでに作品を投稿済みです。新しく追加する場合は、一度削除してください。`);
-        //                     hit_flg = true;
-        //                     break;
-        //                 }
-        //             }
-        //             if(!hit_flg){
-        //                 target.push({"url":msg.attachments[0].url,"user":msg.author.username,"number":msg.author.id});
-        //                 fs.writeFile(filename, JSON.stringify(data));
-        //                 //コメント返し
-        //                 let rnd = Math.floor(Math.random() * data.bot_remsgs.length);
-        //                 bot.createMessage(msg.channel.id, `${msg.author.mention} ${data.bot_remsgs[rnd]}`);
-        //             }
-        //         }
+            }
 
-        //     }
-
-        // }
+        }
 
         //コマンド検知
-        if (msg.content.match(/^[\!\！\?\？].+/)){
+        // if (msg.content.match(/^[\!\！\?\？].+/)){
 
             // const data = JSON.parse(fs.readFileSync(filename,"utf8"));
 
-            //今回のお題表示
-            if(msg.content.match(/^[\!\！](?:やった|おわった|done)/)) {
-                bot.createMessage(msg.channel.id, "えらい！");
-                // bot.createMessage(msg.channel.id, odai_msg(data));
-            }
-            
         //     //過去作表示
         //     }else if(msg.content.match(/^[\?\？](?:作品|works)/)){
         //         let res = msg.content.match(/^[\?\？](?:作品|works)(?: |　)+([\w\u30a0-\u30ff\u3040-\u309f\u3005-\u3006\u30e0-\u9fcf\uff01-\uff5e]+)(?: |　)*(?:\<\@\!?(\d+)\>)?(?: |　)*$/);
@@ -375,7 +318,7 @@ bot.on("messageCreate", msg => {
         //             }
         //         }
         //     }
-        }
+        // }
 
     }
 });
