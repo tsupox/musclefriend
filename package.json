@@ -1,0 +1,23 @@
+{
+  "name": "muscle-friend",
+  "version": "0.0.1",
+  "description": "",
+  "main": "MuscleFriend.js",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "eris": "^0.14.0",
+    "fs": "0.0.1-security"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node MuscleFriend.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://tsupox@bitbucket.org/tsupox/MuscleFriend.git"
+  },
+  "author": "nafudachan.",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/tsupox/MuscleFriend#readme"
+}
