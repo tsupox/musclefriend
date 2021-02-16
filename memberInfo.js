@@ -26,7 +26,7 @@ module.exports = {
         "abs_roller": {
             name: "腹筋ローラー",
             limit_date: 0,
-            total: 0
+            total: 100
         }
     },
 
@@ -60,7 +60,7 @@ module.exports = {
         let start = moment(member.start_date);
         let today = moment()
         let diff = today.diff(start, 'days')
-        let num = member.type_detail.total[diff];
+        let num = (Array.isArray(member.type_detail.total) && member.type_detail.total.length > diff) ? member.type_detail.total[diff] : member.type_detail.total;
         return `今日は ${diff + 1} 日目 ` + (num ? num + "回です。がんばろう！" : "おやすみです。しっかり休んでね")
     },
 
