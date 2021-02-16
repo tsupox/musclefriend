@@ -13,22 +13,26 @@ const Eris = require("eris");
 const fs = require("fs");
 const moment = require("moment");
 const CakeHash = require("cake-hash");
+const randomConversation = require('./randomConversation.js');
 
 /** token */
 const token = process.env.BOT_TOKEN;
 /** bot */
-const bot = new Eris.Client(token);
+const bot = new Eris.CommandClient(token, {}, {
+    prefix: "$"
+});
+
 /** BOT Client ID */
 const bot_id = process.env.BOT_USER_ID;
 /** みんなのデータ */
-const filename = "result.json";
+const filename = "./data/result.json";
 // const backup = "\\\\MYNAS_1\\share1\\backup\\" + filename;//jsonBackupファイル
 
 /** rooms */
 const roomIds = process.env.ROOMS.split(' ');
 const admins = process.env.ADMINS.split(' ');
 const hlp_msg =
-`
+    `
 !start 30easy
 30 日チャレンジ beginner をやるんですね！がんばりましょう！みんなも応援してね！
 !start 30
@@ -67,11 +71,11 @@ XXX さんは今日 X 日目、 Y 回です。頑張りましょう！
 let types = {
     "squat_30_easy": {
         limit_date: 30,
-        total: [20,25,30,null,40,45,50,null,60,65,70,null,80,85,90,null,100,105,110,null,115,120,125,null,130,135,140,null,145,150]
+        total: [20, 25, 30, null, 40, 45, 50, null, 60, 65, 70, null, 80, 85, 90, null, 100, 105, 110, null, 115, 120, 125, null, 130, 135, 140, null, 145, 150]
     },
     "squat_30_hard": {
         limit_date: 30,
-        total: [50,55,60,null,70,75,80,null,100,105,115,null,130,135,140,null,150,155,160,null,180,185,190,null,220,225,230,null,240,250]
+        total: [50, 55, 60, null, 70, 75, 80, null, 100, 105, 115, null, 130, 135, 140, null, 150, 155, 160, null, 180, 185, 190, null, 220, 225, 230, null, 240, 250]
     },
     "squat_7_second": {
         limit_date: 0,
@@ -87,12 +91,62 @@ let result = null;
 
 
 
+bot.registerCommand("list", (msg, args) => {
+    if (args.length) {
+        //引数あり
+        let text = "";
+        if (randomConversation.existCommand(args[0])) {
+            text = randomConversation.getDetail(args[0]);
+        }
+        return text || "その言葉はまだ登録されてないよ";
+    } else {
+        //引数なし
+        return randomConversation.getList().join(' / ')
+    }
+}, {
+    description: "返してくれる言葉一覧。",
+    fullDescription: "登録されている言葉からランダムで返します。",
+    usage: "<text>"
+});
+
+bot.registerCommand("add", (msg, args) => {
+    if (args.length == 2) {
+        //引数あり
+        randomConversation.addCommand(args);
+        return "おぼえました！"
+    } else {
+        //引数なし
+        return "使い方: $add 単語　ランダムに,発生,したい,言葉,カンマ区切り"
+    }
+}, {
+    description: "追加/修正します。",
+    fullDescription: "",
+    usage: "<text>"
+});
+
+bot.registerCommand("delete", (msg, args) => {
+    if (args.length == 1) {
+        //引数あり
+        let result = randomConversation.deleteCommand(args);
+        return result ? "さくじょしました！" : "そんなの登録されてなかったかも"
+    } else {
+        //引数なし
+        return "使い方: $delete 単語"
+    }
+}, {
+    description: "削除します",
+    fullDescription: "",
+    usage: "<text>"
+});
+
 /********************
- *  getRandom
+ *  ready
  ********************/
-let getRandom = (array) => {
-    return array[Math.floor(Math.random() * array.length)];
-}
+bot.on("ready", () => {
+    result = JSON.parse(fs.readFileSync(filename, "utf8"));
+    randomConversation.init();
+    console.log("Ready...");
+});
 
 /********************
  *  getMemberInfo
@@ -101,7 +155,7 @@ let getMemberInfo = (author) => {
     let member = null;
     member = CakeHash.extract(result, `members.{n}[id=${author.id}]`);
     if (member.length) member = member[0];
-    
+
     return member;
 }
 
@@ -121,58 +175,32 @@ let createDetailMsg = (author) => {
     return template;
 }
 
-/********************
- *  ready
- ********************/
-bot.on("ready", () => {
-    result = JSON.parse(fs.readFileSync(filename,"utf8"));
-    console.log("Ready...");
-});
-
 
 /********************
  *  メッセージ
  ********************/
 bot.on("messageCreate", msg => {
-    if (!msg.author.bot){
+    if (!msg.author.bot) {
         // BOT 以外
         // bot.createMessage(msg.channel.id, `${msg.author.mention} テスト`);
-        
-        
-        if(roomIds.includes(msg.channel.id)){
+
+        if (roomIds.includes(msg.channel.id)) {
             //特定チャンネルのみ
 
             //botへのメンションに反応
-            if (msg.mentions.length > 0 && msg.mentions[0].id === bot_id){
-                
-                //おはよう
-                if(msg.content.match(/(?:おはよ|おきた|おきました|起き?)/g)){
-                    bot.createMessage(msg.channel.id, getRandom(["おはよー", "よく寝れた？", "おはよう！"]));
+            if (msg.mentions.length > 0 && msg.mentions[0].id === bot_id) {
+
+                if (randomConversation.existCommand(msg.content)) {
+                    bot.createMessage(msg.channel.id, randomConversation.getWord(msg.content));
+                } else {
+                    bot.createMessage(msg.channel.id, randomConversation.getRandom(["なんかいった？", "ねたらいいよ", "(・_・)？", "ごめん聞いてなかった", "なんて？", "はーい", "それは知らない", "わかんない", "えー？！", "ふむふむ？", "うーんと"]));
                 }
-                //眠い
-                else if(msg.content.match(/(?:ねむ|眠?)/g)){
-                    bot.createMessage(msg.channel.id, getRandom(["ねむいねー", "ねちゃう？", "ねていいよ", "寝よちゃおう"]));
-                }
-                //おやすみ
-                else if(msg.content.match(/(?:おやすみ|ねる|寝る?)/g)){
-                    bot.createMessage(msg.channel.id, getRandom(["おやすみなさいー","おやすみー","おやすみなさい","良い夢を","ゆっくり寝てね","また明日"]));
-                }
-                
-                // 自由に言葉と返信を登録
-                
+
                 //おわったー
-                else if(msg.content.match(/(?:やった|おわった|done|おわり|やりました|おわりました?)/g)){
-                    //TODO 数字を登録
-                    let awesomeReplies = ["えらい！", "さすが！", "よくやった！", "がんばったね", "すばらしいっ", "さいこー！"];
-                    bot.createMessage(msg.channel.id, getRandom(awesomeReplies));
-                    
+                if (msg.content.match(/(?:やった|おわった|done|おわり|やりました|おわりました)/g)) {
                     let awesomeReactions = ["✨", "💯", "🎉", "👏"];
-                    msg.addReaction(getRandom(awesomeReactions));
+                    msg.addReaction(randomConversation.getRandom(awesomeReactions));
                 }
-                
-                // やってない
-                // その他
-                
 
                 // TODO 今日何回
                 // TODO 応援コメント追加

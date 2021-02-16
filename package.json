@@ -13,7 +13,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node MuscleFriend.js"
+    "start": "nodemon MuscleFriend.js"
   },
   "repository": {
     "type": "git",
