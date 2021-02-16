@@ -11,9 +11,10 @@
 require('dotenv').config();
 const Eris = require("eris");
 const fs = require("fs");
-const moment = require("moment");
 const CakeHash = require("cake-hash");
+const cron = require('node-cron');
 const randomConversation = require('./randomConversation.js');
+const memberInfo = require('./memberInfo.js');
 
 /** token */
 const token = process.env.BOT_TOKEN;
@@ -67,30 +68,6 @@ XXX さんは今日 X 日目、 Y 回です。頑張りましょう！
 // ※お題リストには5件まで登録できます。
 `;
 
-/** types */
-let types = {
-    "squat_30_easy": {
-        limit_date: 30,
-        total: [20, 25, 30, null, 40, 45, 50, null, 60, 65, 70, null, 80, 85, 90, null, 100, 105, 110, null, 115, 120, 125, null, 130, 135, 140, null, 145, 150]
-    },
-    "squat_30_hard": {
-        limit_date: 30,
-        total: [50, 55, 60, null, 70, 75, 80, null, 100, 105, 115, null, 130, 135, 140, null, 150, 155, 160, null, 180, 185, 190, null, 220, 225, 230, null, 240, 250]
-    },
-    "squat_7_second": {
-        limit_date: 0,
-        total: 30
-    },
-    "abs_roller": {
-        limit_date: 0,
-        total: 0
-    }
-}
-
-let result = null;
-
-
-
 bot.registerCommand("list", (msg, args) => {
     if (args.length) {
         //引数あり
@@ -139,42 +116,17 @@ bot.registerCommand("delete", (msg, args) => {
     usage: "<text>"
 });
 
+
+
+
 /********************
  *  ready
  ********************/
 bot.on("ready", () => {
-    result = JSON.parse(fs.readFileSync(filename, "utf8"));
+    memberInfo.init();
     randomConversation.init();
     console.log("Ready...");
 });
-
-/********************
- *  getMemberInfo
- ********************/
-let getMemberInfo = (author) => {
-    let member = null;
-    member = CakeHash.extract(result, `members.{n}[id=${author.id}]`);
-    if (member.length) member = member[0];
-
-    return member;
-}
-
-/********************
- *  createDetailMsg
- ********************/
-let createDetailMsg = (author) => {
-    member = getMemberInfo(author);
-    let template = `
-タイプ: ${member.type}
-開始日: ${member.start_date}
-結果: 
-`;
-    member.result.forEach((r) => {
-        template += `${r.date} ${total}\n`;
-    });
-    return template;
-}
-
 
 /********************
  *  メッセージ
@@ -190,28 +142,48 @@ bot.on("messageCreate", msg => {
             //botへのメンションに反応
             if (msg.mentions.length > 0 && msg.mentions[0].id === bot_id) {
 
-                if (randomConversation.existCommand(msg.content)) {
-                    bot.createMessage(msg.channel.id, randomConversation.getWord(msg.content));
-                } else {
+                let content = msg.content.replace(`<@!${msg.mentions[0].id}>`, '').trim()
+                if (randomConversation.existCommand(content)) {
+                    bot.createMessage(msg.channel.id, randomConversation.getWord(content));
+                }
+                //結果
+                else if (content.match(/(?:結果)/g)) {
+                    bot.createMessage(msg.channel.id, memberInfo.getMemberInfo(msg.author.id))
+                }
+                //今日何回
+                else if (content.match(/(?:何回)/g)) {
+                    bot.createMessage(msg.channel.id, memberInfo.howMany(msg.author.id))
+                }
+                else {
                     bot.createMessage(msg.channel.id, randomConversation.getRandom(["なんかいった？", "ねたらいいよ", "(・_・)？", "ごめん聞いてなかった", "なんて？", "はーい", "それは知らない", "わかんない", "えー？！", "ふむふむ？", "うーんと"]));
                 }
 
                 //おわったー
-                if (msg.content.match(/(?:やった|おわった|done|おわり|やりました|おわりました)/g)) {
+                if (content.match(/(?:やった|おわった|done|おわり|やりました|おわりました)/g)) {
                     let awesomeReactions = ["✨", "💯", "🎉", "👏"];
                     msg.addReaction(randomConversation.getRandom(awesomeReactions));
+
+                    //回数登録
+                    memberInfo.addResult(msg.author.id, content)
+                    bot.createMessage(msg.channel.id, memberInfo.getMemberInfo(msg.author.id))
                 }
 
-                // TODO 今日何回
-                // TODO 応援コメント追加
                 // TODO 開始登録
                 // TODO 希望機能登録　…　リポジトリ「課題」に登録
+            }
+
+            if (msg.content.match(/^草$/)) {
+                if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "草");
             }
 
         }
 
     }
 });
+
+// バックアップ
+cron.schedule('0 0 0,12 * * *', memberInfo.backupJson);
+cron.schedule('0 0 0,12 * * *', randomConversation.backupJson);
 
 
 // Discord に接続します。

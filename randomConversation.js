@@ -1,5 +1,6 @@
 const fs = require("fs");
 const CakeHash = require("cake-hash");
+const moment = require("moment");
 const dataFile = './data/conversation.json';
 
 module.exports = {
@@ -70,7 +71,6 @@ module.exports = {
                 }
             });
         }
-        console.log(this.database);
         //file write
         fs.writeFileSync(dataFile, JSON.stringify(this.database));
         return true;
@@ -78,7 +78,6 @@ module.exports = {
 
     deleteCommand: (args) => {
         if (module.exports.existCommand(args[0])) {
-            console.log(args[0])
             //delete
             this.database.commands.forEach((c, i) => {
                 if (args[0].match(new RegExp(c.keyword))) {
@@ -90,6 +89,11 @@ module.exports = {
         } else {
             return false;
         }
-    }
+    },
+
+    backupJson: () => {
+        let now = moment();
+        fs.writeFileSync(dataFile + "_" + now.format("YYYYMMDDHHmm"), JSON.stringify(this.database))
+    },
 
 }
