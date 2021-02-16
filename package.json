@@ -4,9 +4,11 @@
   "description": "",
   "main": "MuscleFriend.js",
   "dependencies": {
+    "cake-hash": "0.0.6",
     "dotenv": "^8.2.0",
     "eris": "^0.14.0",
-    "fs": "0.0.1-security"
+    "fs": "0.0.1-security",
+    "moment": "^2.29.1"
   },
   "devDependencies": {},
   "scripts": {
