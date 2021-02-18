@@ -32,41 +32,21 @@ const filename = "./data/result.json";
 /** rooms */
 const roomIds = process.env.ROOMS.split(' ');
 const admins = process.env.ADMINS.split(' ');
-const hlp_msg =
-    `
-!start 30easy
-30 日チャレンジ beginner をやるんですね！がんばりましょう！みんなも応援してね！
-!start 30
-30 日チャレンジ、みんなと一緒に頑張りましょう！
-!start 7
-7 秒スクワット！頑張りましょう～！
-!done
-えらい！！！
-!howmany
-XXX さんは今日 X 日目、 Y 回です。頑張りましょう！
 
-// (๑╹ω╹๑ ) ＜ コマンド一覧だよ！
+/** メンションユーザー取得 */
+const getMentionedUser = (msg_content) => {
+    let exec = /^<@!([0-9]{17,19})>/.exec(msg_content)
+    return (exec && exec.length > 1) ? exec[1] : null;
+};
 
-// ≪ 確認 コマンド ≫ ------------------------------------------------
-// ？お題　　　　　　　　　　今回のお題表示
-// ？リスト　　　　　　　　　お題抽選リスト（参考：！追加、！削除）
-// ？作品　[お題]　　　　　　過去の作品全表示（例：？作品　ロボット ）
-// ？作品　[お題]　[@ユーザ] そのユーザの過去の作品表示（例：？作品　ロボット　@つぽ#6599 ）
-// ？過去　　　　　　　　　　過去のお題一覧を表示
-// ？過去　[お題]　　　　　　そのお題の投稿者一覧を表示
-
-// ≪ 登録削除 コマンド ≫ --------------------------------------------
-// ！追加　[お題]　　お題抽選リストへの追加
-// ！削除　[お題]　　お題抽選リストからの削除（自分のみ）
-// ！黒歴史　[お題]　過去に投稿した作品の削除
-
-// ≪ odaichan へのメンション ≫ --------------------------------------
-// @odaichan へのメンションで絵を投稿するとその時のお題に紐づけて投稿できます
-// ？作品 コマンドで見れるようになるよ！
-
-// ※？お題　？作品 コマンドは他のルームでも使えます。
-// ※お題リストには5件まで登録できます。
-`;
+const deleteCommandResult = {
+    emoji: '🗑',
+    type: 'edit',
+    response: (msg, args, user) => {
+        let mentionedUserId = getMentionedUser(msg.content)
+        if (mentionedUserId == user.id) msg.delete()
+    }
+};
 
 bot.registerCommand("list", (msg, args) => {
     if (args.length) {
@@ -75,45 +55,69 @@ bot.registerCommand("list", (msg, args) => {
         if (randomConversation.existCommand(args[0])) {
             text = randomConversation.getDetail(args[0]);
         }
-        return text || "その言葉はまだ登録されてないよ";
+        if (text) {
+            msg.addReaction('⭕')
+            return `<@!${msg.author.id}> ${text}`;
+        } else {
+            msg.addReaction('✖')
+            return;
+        }
     } else {
         //引数なし
-        return randomConversation.getList().join(' / ')
+        return `<@!${msg.author.id}> ` + randomConversation.getList().join(' / ')
     }
 }, {
+    // argsRequired: true,
     description: "返してくれる言葉一覧。",
-    fullDescription: "登録されている言葉からランダムで返します。",
-    usage: "<text>"
+    fullDescription: "[$list] で一覧を、 [$list 言葉] でその言葉で返されるランダムな言葉の一覧を表示します。",
+    usage: "なし または　対象の言葉",
+    reactionButtons: [
+        deleteCommandResult
+    ],
 });
 
 bot.registerCommand("add", (msg, args) => {
     if (args.length == 2) {
         //引数あり
         randomConversation.addCommand(args);
-        return "おぼえました！"
+        msg.addReaction('⭕');
+        return;
     } else {
-        //引数なし
-        return "使い方: $add 単語　ランダムに,発生,したい,言葉,カンマ区切り"
+        //引数なし or カンマ区切りでない
+        msg.addReaction('✖')
+        return `<@!${msg.author.id}> ` + "使い方: [$add 単語　ランダムに,返答,したい,言葉,カンマ区切り]　半角カンマで区切ってください"
     }
 }, {
+    argsRequired: true,
     description: "追加/修正します。",
-    fullDescription: "",
-    usage: "<text>"
+    fullDescription: "存在しない言葉は新規登録を、すでに存在する言葉は与えられたランダム言葉で上書きします。\n今までの言葉を消したくない場合は、先に [$list 言葉] で登録されている内容を確認して、同じ言葉を再度登録する必要があります。",
+    usage: "単語　ランダムに,返答,したい,言葉,カンマ区切り",
+    reactionButtons: [
+        deleteCommandResult
+    ],
 });
 
 bot.registerCommand("delete", (msg, args) => {
     if (args.length == 1) {
         //引数あり
         let result = randomConversation.deleteCommand(args);
-        return result ? "さくじょしました！" : "そんなの登録されてなかったかも"
+        if (result) {
+            msg.addReaction('⭕');
+        } else {
+            msg.addReaction('✖')
+        }
     } else {
         //引数なし
         return "使い方: $delete 単語"
     }
 }, {
+    argsRequired: true,
     description: "削除します",
-    fullDescription: "",
-    usage: "<text>"
+    fullDescription: "登録された言葉を削除します。",
+    usage: "削除したい言葉",
+    reactionButtons: [
+        deleteCommandResult
+    ],
 });
 
 
@@ -152,14 +156,15 @@ bot.on("messageCreate", msg => {
                 }
                 //今日何回
                 else if (content.match(/(?:何回)/g)) {
-                    bot.createMessage(msg.channel.id, memberInfo.howMany(msg.author.id))
+                    let adjustment = content.match(/明日/) ? 1 : 0;
+                    bot.createMessage(msg.channel.id, memberInfo.howMany(msg.author.id, adjustment))
                 }
                 else {
                     bot.createMessage(msg.channel.id, randomConversation.getRandom(["なんかいった？", "ねたらいいよ", "(・_・)？", "ごめん聞いてなかった", "なんて？", "はーい", "それは知らない", "わかんない", "えー？！", "ふむふむ？", "うーんと"]));
                 }
 
                 //おわったー
-                if (content.match(/(?:やった|おわった|done|おわり|やりました|おわりました)/g)) {
+                if (content.match(/(?:やった|おわった|done|おわり|やりました|終わ)/g)) {
                     let awesomeReactions = ["✨", "💯", "🎉", "👏"];
                     msg.addReaction(randomConversation.getRandom(awesomeReactions));
 

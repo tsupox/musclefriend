@@ -49,19 +49,22 @@ module.exports = {
 タイプ: ${member.type_detail.name}
 開始日: ${member.start_date}
 `;
+        let total = 0;
         member.result.forEach((r) => {
             text += `${r.date} ${r.total}回\n`;
+            if (r.total) total += (r.total * 1)
         });
+        text += `合計 ${total} 回やりました！`
         return text;
     },
 
-    howMany: (id) => {
+    howMany: (id, adjustment = 0) => {
         let member = module.exports.getMember(id)
         let start = moment(member.start_date);
         let today = moment()
-        let diff = today.diff(start, 'days')
+        let diff = today.add(adjustment, 'days').diff(start, 'days')
         let num = (Array.isArray(member.type_detail.total) && member.type_detail.total.length > diff) ? member.type_detail.total[diff] : member.type_detail.total;
-        return `今日は ${diff + 1} 日目 ` + (num ? num + "回です。がんばろう！" : "おやすみです。しっかり休んでね")
+        return `${(adjustment == 1 ? '明日' : '今日')}は ${diff + 1} 日目 ` + (num ? num + "回です。がんばろう！" : "おやすみです。しっかり休んでね")
     },
 
     addResult: (id, msg_content) => {
