@@ -8,11 +8,14 @@
 
 "use strict";
 
+// node requires
 require('dotenv').config();
 const Eris = require("eris");
 const fs = require("fs");
 const CakeHash = require("cake-hash");
 const cron = require('node-cron');
+
+// modules
 const randomConversation = require('./randomConversation.js');
 const memberInfo = require('./memberInfo.js');
 
@@ -25,12 +28,10 @@ const bot = new Eris.CommandClient(token, {}, {
 
 /** BOT Client ID */
 const bot_id = process.env.BOT_USER_ID;
-/** みんなのデータ */
-const filename = "./data/result.json";
-// const backup = "\\\\MYNAS_1\\share1\\backup\\" + filename;//jsonBackupファイル
 
 /** rooms */
 const roomIds = process.env.ROOMS.split(' ');
+/** admins (not use) */
 const admins = process.env.ADMINS.split(' ');
 
 /** メンションユーザー取得 */
@@ -82,6 +83,7 @@ bot.registerCommand("add", (msg, args) => {
         randomConversation.addCommand(args);
         msg.addReaction('⭕');
         return;
+        //TODO 3 で数字付きadd
     } else {
         //引数なし or カンマ区切りでない
         msg.addReaction('✖')
@@ -138,7 +140,6 @@ bot.on("ready", () => {
 bot.on("messageCreate", msg => {
     if (!msg.author.bot) {
         // BOT 以外
-        // bot.createMessage(msg.channel.id, `${msg.author.mention} テスト`);
 
         if (roomIds.includes(msg.channel.id)) {
             //特定チャンネルのみ
@@ -146,7 +147,8 @@ bot.on("messageCreate", msg => {
             //botへのメンションに反応
             if (msg.mentions.length > 0 && msg.mentions[0].id === bot_id) {
 
-                let content = msg.content.replace(`<@!${msg.mentions[0].id}>`, '').trim()
+                let content = msg.content.replace(`<@!${msg.mentions[0].id}>`, '').replace(`<@${msg.mentions[0].id}>`, '').trim()
+
                 if (randomConversation.existCommand(content)) {
                     bot.createMessage(msg.channel.id, randomConversation.getWord(content));
                 }
@@ -160,11 +162,12 @@ bot.on("messageCreate", msg => {
                     bot.createMessage(msg.channel.id, memberInfo.howMany(msg.author.id, adjustment))
                 }
                 else {
+                    //TODO 動的化
                     bot.createMessage(msg.channel.id, randomConversation.getRandom(["なんかいった？", "ねたらいいよ", "(・_・)？", "ごめん聞いてなかった", "なんて？", "はーい", "それは知らない", "わかんない", "えー？！", "ふむふむ？", "うーんと"]));
                 }
 
                 //おわったー
-                if (content.match(/(?:やった|おわった|done|おわり|やりました|終わ)/g)) {
+                if (content.match(/(?:やった|おわった|done|おわり|やりました|終わ)/g) && !content.match(/仕事/g)) {
                     let awesomeReactions = ["✨", "💯", "🎉", "👏"];
                     msg.addReaction(randomConversation.getRandom(awesomeReactions));
 
@@ -179,6 +182,10 @@ bot.on("messageCreate", msg => {
 
             if (msg.content.match(/^草$/)) {
                 if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "草");
+            } else if (msg.content.match(/^えらい！/)) {
+                if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "えらい！");
+            } else if (msg.content.match(/(?:ｗ|（笑）|\(笑\))/g)) {
+                if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "ｗｗｗ");
             }
 
         }
