@@ -51,9 +51,27 @@ module.exports = {
     },
 
     addCommand: (args) => {
-        if (!module.exports.existCommand(args[0])) {
+        if (/\d/.test(args[1])) {
+            // 引数が数字のみ - すでに存在するランダム返信へのコマンド追加
+            console.log('add command but exist reply: ' + args.join(' '))
+
+            let randomReplyId = args[1].trim()
+            if (this.database.replies[randomReplyId] === undefined) {
+                // 存在しないランダム返信
+                return false;
+            }
+            //コマンド
+            let save = {
+                keyword: args[0],
+                replyId: randomReplyId
+            };
+            this.database.commands.push(save);
+
+        } else if (!module.exports.existCommand(args[0])) {
             //insert
-            //ランダムコメント
+            console.log('add command: ' + args.join(' '))
+
+            //ランダム返信
             this.database.replies.push(args[1]);
             //コマンド
             let save = {
@@ -63,10 +81,12 @@ module.exports = {
             this.database.commands.push(save);
 
         } else {
-            //save
+            //edit reply
+            console.log('edit reply: ' + args.join(' '))
+
             this.database.commands.forEach((c) => {
                 if (args[0].match(new RegExp(c.keyword))) {
-                    //ランダムコメント
+                    //ランダム返信
                     this.database.replies[c.replyId] = args[1];
                 }
             });
@@ -79,6 +99,8 @@ module.exports = {
     deleteCommand: (args) => {
         if (module.exports.existCommand(args[0])) {
             //delete
+            console.log('delete command: ' + args.join(' '))
+
             this.database.commands.forEach((c, i) => {
                 if (args[0].match(new RegExp(c.keyword))) {
                     this.database.commands.splice(i, 1)
@@ -94,6 +116,7 @@ module.exports = {
     backupJson: () => {
         let now = moment();
         fs.writeFileSync(dataFile + "_" + now.format("YYYYMMDDHHmm"), JSON.stringify(this.database))
+        //TODO: S3 バックアップ
     },
 
 }

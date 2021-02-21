@@ -80,10 +80,14 @@ bot.registerCommand("list", (msg, args) => {
 bot.registerCommand("add", (msg, args) => {
     if (args.length == 2) {
         //引数あり
-        randomConversation.addCommand(args);
-        msg.addReaction('⭕');
+        let result = randomConversation.addCommand(args);
+        if (result) {
+            msg.addReaction('⭕');
+        } else {
+            msg.addReaction('✖')
+        }
         return;
-        //TODO 3 で数字付きadd
+
     } else {
         //引数なし or カンマ区切りでない
         msg.addReaction('✖')

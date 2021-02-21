@@ -50,11 +50,12 @@ module.exports = {
 開始日: ${member.start_date}
 `;
         let total = 0;
-        member.result.forEach((r) => {
-            text += `${r.date} ${r.total}回\n`;
+        member.result.forEach((r, i) => {
+            text += `${r.date} ${r.total}回　`;
+            if (i % 3 == 2) text += `\n`
             if (r.total) total += (r.total * 1)
         });
-        text += `合計 ${total} 回やりました！`
+        text += `\n合計 ${total} 回やりました！`
         return text;
     },
 
@@ -100,5 +101,6 @@ module.exports = {
     backupJson: () => {
         let now = moment();
         fs.writeFileSync(dataFile + "_" + now.format("YYYYMMDDHHmm"), JSON.stringify(this.database))
+        //TODO: S3 バックアップ
     },
 }
