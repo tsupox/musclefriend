@@ -40,7 +40,7 @@ module.exports = {
             // 日付変更時間
             date = date.add(-1, 'days')
         }
-        return date
+        return moment(date.format('YYYY-MM-DD'))    // 時刻を 0 時にする（日付計算でおかしくなるため９
     },
 
     getMember: (id, needTypeDetail = true) => {
@@ -97,6 +97,11 @@ module.exports = {
                 "total": num
             })
         }
+        member.result.sort((a, b) => {
+            if (a.date > b.date) return 1
+            if (a.date < b.date) return -1
+            return 0
+        });
         this.database.members.forEach((d, i) => {
             if (d.id == member.id) {
                 this.database.members[i] = member;
