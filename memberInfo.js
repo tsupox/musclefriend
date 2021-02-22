@@ -34,6 +34,15 @@ module.exports = {
         this.database = JSON.parse(fs.readFileSync(dataFile, "utf8"));
     },
 
+    getToday: (arg) => {
+        let date = moment(arg);
+        if (date.hour() < process.env.DAY_START_TIME) {
+            // 日付変更時間
+            date = date.add(-1, 'days')
+        }
+        return date
+    },
+
     getMember: (id, needTypeDetail = true) => {
         let member = CakeHash.extract(this.database, `members.{n}[id=${id}]`);
         if (member.length) {
@@ -51,8 +60,8 @@ module.exports = {
 `;
         let total = 0;
         member.result.forEach((r, i) => {
-            text += `${r.date} ${r.total}回　`;
-            if (i % 3 == 2) text += `\n`
+            text += `${r.date}: ${r.total}回　`;
+            if (i % 3 == 2 && i != (member.result.length - 1)) text += `\n`
             if (r.total) total += (r.total * 1)
         });
         text += `\n合計 ${total} 回やりました！`
@@ -62,10 +71,10 @@ module.exports = {
     howMany: (id, adjustment = 0) => {
         let member = module.exports.getMember(id)
         let start = moment(member.start_date);
-        let today = moment()
-        let diff = today.add(adjustment, 'days').diff(start, 'days')
+        let targetDate = module.exports.getToday().add(adjustment, 'days')
+        let diff = targetDate.diff(start, 'days')
         let num = (Array.isArray(member.type_detail.total) && member.type_detail.total.length > diff) ? member.type_detail.total[diff] : member.type_detail.total;
-        return `${(adjustment == 1 ? '明日' : '今日')}は ${diff + 1} 日目 ` + (num ? num + "回です。がんばろう！" : "おやすみです。しっかり休んでね")
+        return `${(adjustment == 1 ? '明日' : '今日')}(${targetDate.format('YYYY/MM/DD')}) は ${diff + 1} 日目 ` + (num ? num + "回です。がんばろう！" : "おやすみです。しっかり休んでね")
     },
 
     addResult: (id, msg_content) => {
@@ -73,7 +82,7 @@ module.exports = {
         let num = msg_content.replace(/[^0-9]/g, '');
         let exists = false;
 
-        let today = moment()
+        let today = module.exports.getToday()
         member.result.forEach((r, i) => {
             let tmpDate = moment(r.date)
             if (today.diff(tmpDate, 'days') == 0) {
@@ -97,6 +106,9 @@ module.exports = {
         fs.writeFileSync(dataFile, JSON.stringify(this.database));
         return true;
     },
+
+    //TODO delete result
+    //TODO list everyone's result
 
     backupJson: () => {
         let now = moment();
