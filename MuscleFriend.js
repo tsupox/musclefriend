@@ -43,7 +43,7 @@ const getMentionedUser = (msg_content) => {
 const deleteCommandResult = {
     emoji: '🗑',
     type: 'edit',
-    response: (msg, args, user) => {
+    response: (msg, args, user) => {    //TODO 秒数制限がありそう
         let mentionedUserId = getMentionedUser(msg.content)
         if (mentionedUserId == user.id) msg.delete()
     }
@@ -77,7 +77,7 @@ bot.registerCommand("list", (msg, args) => {
     ],
 });
 
-bot.registerCommand("add", (msg, args) => {
+bot.registerCommand("add", (msg, args) => { //TODO add もDM対応するか・・・
     if (args.length == 2) {
         //引数あり
         let result = randomConversation.addCommand(args);

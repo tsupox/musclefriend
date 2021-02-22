@@ -18,7 +18,7 @@ module.exports = {
         let list = [];
         this.database.commands.forEach((c) => {
             // list.push(`[${c.keyword}] - ${c.replyId}   ${this.database.replies[c.replyId]}`);
-            list.push(`[${c.keyword}] - ${c.replyId}`);
+            list.push(`[${c.keyword}] - ${c.replyId}`); //TODO list は多くなってきたので DM に変更
         });
         return list;
     },
@@ -53,7 +53,7 @@ module.exports = {
     addCommand: (args) => {
         if (/\d/.test(args[1])) {
             // 引数が数字のみ - すでに存在するランダム返信へのコマンド追加
-            console.log('add command but exist reply: ' + args.join(' '))
+            console.log('add command but exist reply: ' + args.join(' '))   //TODO 監査ログに変更（他も全部）
 
             let randomReplyId = args[1].trim()
             if (this.database.replies[randomReplyId] === undefined) {
