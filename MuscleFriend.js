@@ -186,7 +186,7 @@ bot.on("messageCreate", async msg => {
             } else if (msg.content.match(/(?:ｗ|（笑）|\(笑\))/g)) {
                 if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "ｗｗｗ");
             } else {
-                if (Math.random() < 0.05) bot.createMessage(msg.channel.id, randomConversation.getRandom([
+                if (Math.random() < 0.01) bot.createMessage(msg.channel.id, randomConversation.getRandom([
                     "何がなんでも仕留めろ", "逃がすな", "ぬるい方法では許さん", "根こそぎ奪え", "残さず絶やせ",
                     "ぬこおおおおおおおハァハァかわいいよ撫でたいよ吸いたいよゴロンゴロンかわいいでちゅねえええええええ",
                 ]));
