@@ -3,8 +3,8 @@ const CakeHash = require("cake-hash");
 const moment = require("moment");
 const dataFile = './data/result.json';
 
+let database = null;
 module.exports = {
-    database: null,
 
     /** types */
     types: {

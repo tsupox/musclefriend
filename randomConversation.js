@@ -1,13 +1,37 @@
 const fs = require("fs");
 const CakeHash = require("cake-hash");
 const moment = require("moment");
+// -- 言語解析
+const kuromojin = require('kuromojin');
+const negaposiAnalyzer = require('negaposi-analyzer-ja');
+
 const dataFile = './data/conversation.json';
 
+let database = null;
+let replies = {
+    normal: [
+        "なんかいった？", "(・_・)？", "ごめん聞いてなかった", "なんて？", "はーい",
+        "それは知らない", "わかんない", "えー？！", "ふむふむ？", "うーんと", "それで？",
+        "なるほど", "どういうこと？", `...？！`, "へぇ", "ふーん", "(゜∀。)", "(・∀・)", "(｡>﹏<｡)"
+    ],
+    positive: [
+        "それはすごい", "それほんとそう", "さっすが！", "知らなかった", "すごいね～", "すごーい", "センスいいね～", "そうなんだ", "そっか", "ほう？",
+        "なるほど", "うんうん", "ほぅほぅ", "すごいね", "はーい", "(*´ω｀*)", "(；´Д｀)", "たしかに",
+    ],
+    negative: [
+        "ひぃ", "そり", "それはひどい", "ご愁傷さまです", "なむなむ", "そうだよねぇ", "つらい", "( ；∀；)", "＼(^o^)／", "｡ﾟ(ﾟ´Д｀ﾟ)ﾟ｡", "(；´Д｀)", "( T_T)＼(^-^ )",
+    ],
+    answer: [
+        "はい", "うん", "うーん", "いいえ", "どうだろう", "他の人にも聞いて見て", "わかんない", "(・_・)？", "ちょっとだけ", "はい", "うぃ", "知らなかった", ""
+    ]
+};
+
+
 module.exports = {
-    database: null,
 
     init: () => {
         this.database = JSON.parse(fs.readFileSync(dataFile, "utf8"));
+        this.replies = replies;
     },
 
     getRandom: (array) => {
@@ -39,14 +63,43 @@ module.exports = {
         return result !== null;
     },
 
+    getNegaPosiPoint: (text) => {
+        // +:positive -:negative
+        kuromojin.tokenize(text).then(token => {
+            const score = negaposiAnalyzer(token);
+            console.log(score);
+            return score;
+        });
+    },
+
     getWord: (keyword) => {
         let word = "";
-        this.database.commands.forEach((c) => {
-            if (keyword.match(new RegExp(c.keyword, 'g'))) {
-                let replies = this.database.replies[c.replyId].split(",");
-                word = module.exports.getRandom(replies);
+
+        if (module.exports.existCommand(keyword)) {
+            // 登録済みの言葉
+            this.database.commands.forEach((c) => {
+                if (keyword.match(new RegExp(c.keyword, 'g'))) {
+                    let replies = this.database.replies[c.replyId].split(",");
+                    word = module.exports.getRandom(replies);
+                }
+            });
+        }
+
+        if (word == "") {
+            // 取れなかったとき
+            let wordList = this.replies.normal;
+            if (keyword.match(/(?:？|\?)$/g)) {
+                // question
+                wordList = wordList.concat(this.replies.answer)
+            } else {
+                // 取れなかったときはネガポジ判断をして登録
+                let point = module.exports.getNegaPosiPoint(keyword);
+                // console.log(`${point} : ${keyword}`)
+                let negaPoji = point > 0 ? 'positive' : 'negative';
+                wordList = wordList.concat(this.replies[negaPoji])
             }
-        });
+            word = module.exports.getRandom(wordList);
+        }
         return word;
     },
 

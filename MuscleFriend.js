@@ -153,26 +153,16 @@ bot.on("messageCreate", msg => {
 
                 let content = msg.content.replace(`<@!${msg.mentions[0].id}>`, '').replace(`<@${msg.mentions[0].id}>`, '').trim()
 
-                if (randomConversation.existCommand(content)) {
-                    bot.createMessage(msg.channel.id, randomConversation.getWord(content));
-                }
                 //結果
-                else if (content.match(/(?:結果)/g)) {
+                if (content.match(/(?:結果)/g)) {
                     bot.createMessage(msg.channel.id, memberInfo.getMemberInfo(msg.author.id))
                 }
                 //今日何回
                 else if (content.match(/(?:何回)/g)) {
                     let adjustment = content.match(/明日/) ? 1 : 0;
                     bot.createMessage(msg.channel.id, memberInfo.howMany(msg.author.id, adjustment))
-                }
-                else {
-                    //TODO 動的化
-                    bot.createMessage(msg.channel.id, randomConversation.getRandom([
-                        "なんかいった？", "(・_・)？", "ごめん聞いてなかった", "なんて？", "はーい",
-                        "それは知らない", "わかんない", "えー？！", "ふむふむ？", "うーんと",
-                        "なるほど", "どういうこと？", `${msg.content} ...？！`, "それはすごい", "そんなかんじ。",
-                        "おっと", "へぇ", "ふーん", "ほう？", "はぁ。", "ひぃ", "そり", "それほんとそう",
-                        "さっすが！", "知らなかった", "すごいね～", "すごーい", "センスいいね～", "そうなんだ", "そっか"]));
+                } else {
+                    bot.createMessage(msg.channel.id, randomConversation.getWord(content));
                 }
 
                 //おわったー
@@ -195,8 +185,12 @@ bot.on("messageCreate", msg => {
                 if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "えらい！");
             } else if (msg.content.match(/(?:ｗ|（笑）|\(笑\))/g)) {
                 if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "ｗｗｗ");
+            } else {
+                if (Math.random() < 0.05) bot.createMessage(msg.channel.id, randomConversation.getRandom([
+                    "何がなんでも仕留めろ", "逃がすな", "ぬるい方法では許さん", "根こそぎ奪え", "残さず絶やせ",
+                    "ぬこおおおおおおおハァハァかわいいよ撫でたいよ吸いたいよゴロンゴロンかわいいでちゅねえええええええ",
+                ]));
             }
-
         }
 
     }
