@@ -74,6 +74,7 @@ module.exports = {
 
     getWord: async (keyword) => {
         let word = "";
+        let tempWord = "";
 
         if (module.exports.existCommand(keyword)) {
             // 登録済みの言葉
@@ -95,12 +96,13 @@ module.exports = {
                 // 取れなかったときはネガポジ判断をして登録
                 let point = await module.exports.getNegaPosiPoint(keyword);
                 console.log(`${point}  ${keyword}`)
+                tempWord = `\n(${point}  ${keyword})`
                 if (point != 0) {
                     let negaPoji = point > 0 ? 'positive' : 'negative';
                     wordList = wordList.concat(this.replies[negaPoji])
                 }
             }
-            word = module.exports.getRandom(wordList);
+            word = module.exports.getRandom(wordList) + tempWord;
         }
         return word;
     },
