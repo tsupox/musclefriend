@@ -95,9 +95,10 @@ module.exports = {
                 // 取れなかったときはネガポジ判断をして登録
                 let point = await module.exports.getNegaPosiPoint(keyword);
                 console.log(`${point}  ${keyword}`)
-                // console.log(`${point} : ${keyword}`)
-                let negaPoji = point > 0 ? 'positive' : 'negative';
-                wordList = wordList.concat(this.replies[negaPoji])
+                if (point != 0) {
+                    let negaPoji = point > 0 ? 'positive' : 'negative';
+                    wordList = wordList.concat(this.replies[negaPoji])
+                }
             }
             word = module.exports.getRandom(wordList);
         }
