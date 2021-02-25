@@ -12,17 +12,17 @@ let replies = {
     normal: [
         "なんかいった？", "(・_・)？", "ごめん聞いてなかった", "なんて？", "はーい",
         "それは知らない", "わかんない", "えー？！", "ふむふむ？", "うーんと", "それで？",
-        "なるほど", "どういうこと？", `...？！`, "へぇ", "ふーん", "(゜∀。)", "(・∀・)", "(｡>﹏<｡)"
+        "なるほど", "どういうこと？", `...？！`, "へぇ", "ふーん", "(・∀・)", "(｡>﹏<｡)"
     ],
     positive: [
         "それはすごい", "それほんとそう", "さっすが！", "知らなかった", "すごいね～", "すごーい", "センスいいね～", "そうなんだ", "そっか", "ほう？",
-        "なるほど", "うんうん", "ほぅほぅ", "すごいね", "はーい", "(*´ω｀*)", "(；´Д｀)", "たしかに",
+        "なるほど", "うんうん", "ほぅほぅ", "すごいね", "はーい", "(*´ω｀*)", "たしかに",
     ],
     negative: [
-        "ひぃ", "そり", "それはひどい", "ご愁傷さまです", "なむなむ", "そうだよねぇ", "つらい", "( ；∀；)", "＼(^o^)／", "｡ﾟ(ﾟ´Д｀ﾟ)ﾟ｡", "(；´Д｀)", "( T_T)＼(^-^ )",
+        "ひぃ", "そり", "それはひどい", "ご愁傷さまです", "なむなむ", "そうだよねぇ", "つらい", "( ；∀；)", "＼(^o^)／", "｡ﾟ(ﾟ´Д｀ﾟ)ﾟ｡", "(；´Д｀)", "( T_T)＼(^-^ )", "(゜∀。)",
     ],
     answer: [
-        "はい", "うん", "うーん", "いいえ", "どうだろう", "他の人にも聞いて見て", "わかんない", "(・_・)？", "ちょっとだけ", "はい", "うぃ", "知らなかった", ""
+        "はい", "うん", "うーん", "いいえ", "どうだろう", "他の人にも聞いて見て", "わかんない", "(・_・)？", "ちょっとだけ", "はい", "うぃ", "知らない",
     ]
 };
 
@@ -63,7 +63,7 @@ module.exports = {
         return result !== null;
     },
 
-    getNegaPosiPoint: async (text) => {
+    getNegaPosiScore: async (text) => {
         // +:positive -:negative
         let score = await kuromojin.tokenize(text).then((token) => {
             const score = negaposiAnalyzer(token);
@@ -72,39 +72,43 @@ module.exports = {
         return score;
     },
 
-    getWord: async (keyword) => {
-        let word = "";
-        let tempWord = "";
+    getReply: async (keyword) => {
+        let result = {
+            word: "",
+            emoji: "",
+        }
 
         if (module.exports.existCommand(keyword)) {
             // 登録済みの言葉
             this.database.commands.forEach((c) => {
                 if (keyword.match(new RegExp(c.keyword, 'g'))) {
                     let replies = this.database.replies[c.replyId].split(",");
-                    word = module.exports.getRandom(replies);
+                    result.word = module.exports.getRandom(replies);
                 }
             });
         }
 
-        if (word == "") {
+        if (result.word == "") {
             // 取れなかったとき
             let wordList = this.replies.normal;
             if (keyword.match(/(?:？|\?)$/g)) {
                 // question
-                wordList = wordList.concat(this.replies.answer)
+                wordList = this.replies.answer
             } else {
                 // 取れなかったときはネガポジ判断をして登録
-                let point = await module.exports.getNegaPosiPoint(keyword);
-                console.log(`${point}  ${keyword}`)
-                tempWord = `\n(${point}  ${keyword})`
-                if (point != 0) {
-                    let negaPoji = point > 0 ? 'positive' : 'negative';
-                    wordList = wordList.concat(this.replies[negaPoji])
+                let score = await module.exports.getNegaPosiScore(keyword);
+                console.log(`${score}  ${keyword}`)
+                if (score != 0) {
+                    let negaPoji = score > 0 ? 'positive' : 'negative';
+                    result.emoji = score > 0 ? "😄" : "😟";
+                    wordList = this.replies[negaPoji]
+                } else {
+                    result.emoji = "🙄" // 😐
                 }
             }
-            word = module.exports.getRandom(wordList) + tempWord;
+            result.word = module.exports.getRandom(wordList);
         }
-        return word;
+        return result;
     },
 
     addCommand: (args) => {

@@ -58,14 +58,14 @@ bot.registerCommand("list", (msg, args) => {
         }
         if (text) {
             msg.addReaction('⭕')
-            return `<@!${msg.author.id}> ${text}`;
+            return `<@!${msg.author.id}> \`\`\`${text}\`\`\``;
         } else {
             msg.addReaction('✖')
             return;
         }
     } else {
         //引数なし
-        return `<@!${msg.author.id}> ` + randomConversation.getList().join(' / ')
+        return `<@!${msg.author.id}> ` + "```" + randomConversation.getList().join(' / ') + "```"
     }
 }, {
     // argsRequired: true,
@@ -91,7 +91,7 @@ bot.registerCommand("add", (msg, args) => { //TODO add もDM対応するか・�
     } else {
         //引数なし or カンマ区切りでない
         msg.addReaction('✖')
-        return `<@!${msg.author.id}> ` + "使い方: [$add 単語　ランダムに,返答,したい,言葉,カンマ区切り]　半角カンマで区切ってください"
+        return `<@!${msg.author.id}> ` + "`使い方: [$add 単語　ランダムに,返答,したい,言葉,カンマ区切り]　半角カンマで区切ってください`"
     }
 }, {
     argsRequired: true,
@@ -114,13 +114,33 @@ bot.registerCommand("delete", (msg, args) => {
         }
     } else {
         //引数なし
-        return "使い方: $delete 単語"
+        return "`使い方: $delete 単語`"
     }
 }, {
     argsRequired: true,
     description: "削除します",
     fullDescription: "登録された言葉を削除します。",
     usage: "削除したい言葉",
+    reactionButtons: [
+        deleteCommandResult
+    ],
+});
+
+bot.registerCommand("score", async (msg, args) => {
+    if (args.length == 1) {
+        //引数あり
+        let score = await randomConversation.getNegaPosiScore(args[0]);
+        msg.addReaction('⭕');
+        return `\`${score}  ${args[0]}\``
+    } else {
+        //引数なし
+        return "使い方: $score チェックしたい文章"
+    }
+}, {
+    argsRequired: true,
+    description: "ネガポジスコアをチェックします。",
+    fullDescription: "文章からネガティブ／ポジティブのスコアを判定します。＋がポジティブ。－がネガティブ。",
+    usage: "判定したい文章",
     reactionButtons: [
         deleteCommandResult
     ],
@@ -162,7 +182,11 @@ bot.on("messageCreate", async msg => {
                     let adjustment = content.match(/明日/) ? 1 : 0;
                     bot.createMessage(msg.channel.id, memberInfo.howMany(msg.author.id, adjustment))
                 } else {
-                    bot.createMessage(msg.channel.id, await randomConversation.getWord(content));
+                    let reply = await randomConversation.getReply(content)
+                    if (reply.emoji) {
+                        msg.addReaction(reply.emoji);
+                    }
+                    bot.createMessage(msg.channel.id, reply.word);
                 }
 
                 //おわったー
