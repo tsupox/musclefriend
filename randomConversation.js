@@ -26,7 +26,7 @@ let replies = {
     ]
 };
 
-
+//TODO UT いるな・・・
 module.exports = {
 
     init: () => {
@@ -63,16 +63,16 @@ module.exports = {
         return result !== null;
     },
 
-    getNegaPosiPoint: (text) => {
+    getNegaPosiPoint: async (text) => {
         // +:positive -:negative
-        kuromojin.tokenize(text).then(token => {
+        let score = await kuromojin.tokenize(text).then((token) => {
             const score = negaposiAnalyzer(token);
-            console.log(score);
             return score;
         });
+        return score;
     },
 
-    getWord: (keyword) => {
+    getWord: async (keyword) => {
         let word = "";
 
         if (module.exports.existCommand(keyword)) {
@@ -93,7 +93,8 @@ module.exports = {
                 wordList = wordList.concat(this.replies.answer)
             } else {
                 // 取れなかったときはネガポジ判断をして登録
-                let point = module.exports.getNegaPosiPoint(keyword);
+                let point = await module.exports.getNegaPosiPoint(keyword);
+                console.log(`${point}  ${keyword}`)
                 // console.log(`${point} : ${keyword}`)
                 let negaPoji = point > 0 ? 'positive' : 'negative';
                 wordList = wordList.concat(this.replies[negaPoji])
