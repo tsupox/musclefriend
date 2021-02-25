@@ -141,7 +141,7 @@ bot.on("ready", () => {
 /********************
  *  メッセージ
  ********************/
-bot.on("messageCreate", msg => {
+bot.on("messageCreate", async msg => {
     if (!msg.author.bot) {
         // BOT 以外
 
@@ -162,7 +162,7 @@ bot.on("messageCreate", msg => {
                     let adjustment = content.match(/明日/) ? 1 : 0;
                     bot.createMessage(msg.channel.id, memberInfo.howMany(msg.author.id, adjustment))
                 } else {
-                    bot.createMessage(msg.channel.id, randomConversation.getWord(content));
+                    bot.createMessage(msg.channel.id, await randomConversation.getWord(content));
                 }
 
                 //おわったー
