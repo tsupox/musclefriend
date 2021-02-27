@@ -28,6 +28,7 @@ forever start MuscleFriend.js
 ```
 
 ## 構成
+```
 MuscleFriend.js ... ボット本体
 memberInfo.js ... スクワット30日チャンレンジ登録・確認用モジュール
 randomConversation.js ... 言葉に反応して/もしくは時々おしゃべりさせる用モジュール
@@ -37,4 +38,4 @@ sample.env ... 環境変数サンプルファイル
 data/ ... 保存データ
 ├ conversation.json ... 登録済みの反応する言葉一覧
 └ result.json ... 30日チャレンジ結果一覧
-
+```
