@@ -39,3 +39,25 @@ data/ ... 保存データ
 ├ conversation.json ... 登録済みの反応する言葉一覧
 └ result.json ... 30日チャレンジ結果一覧
 ```
+
+
+## テスト
+
+Using expect by chai.
+
+See;
+[Expect / Should \- Chai :  https://www.chaijs.com/api/bdd/](https://www.chaijs.com/api/bdd/)
+
+```
+npm test
+  // or
+npm install -g mocha
+mocha
+mocha test/memberinfo.test.js
+mocha test/randomConversation.test.js
+  // or
+npm install -g jest-cli
+jest
+jest test/memberinfo.test.js
+jest test/randomConversation.test.js
+```

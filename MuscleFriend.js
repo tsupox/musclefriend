@@ -200,9 +200,9 @@ bot.on("messageCreate", async msg => {
                 }
 
                 // TODO 開始登録
-                // TODO 希望機能登録　…　リポジトリ「課題」に登録
             }
 
+            // TODO ガチャ言葉は外だし
             if (msg.content.match(/^草$/)) {
                 if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "草");
             } else if (msg.content.match(/^えらい！/)) {

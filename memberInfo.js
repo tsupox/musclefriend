@@ -3,8 +3,10 @@ const CakeHash = require("cake-hash");
 const moment = require("moment");
 const dataFile = './data/result.json';
 
-let database = null;
-module.exports = {
+const DAY_START_TIME = 5;
+
+let memberInfo = {
+    database: null,
 
     /** types */
     types: {
@@ -31,12 +33,12 @@ module.exports = {
     },
 
     init: () => {
-        this.database = JSON.parse(fs.readFileSync(dataFile, "utf8"));
+        memberInfo.database = JSON.parse(fs.readFileSync(dataFile, "utf8"));
     },
 
-    getToday: (arg) => {
-        let date = moment(arg);
-        if (date.hour() < process.env.DAY_START_TIME) {
+    getToday: () => {
+        let date = moment();
+        if (date.hour() < DAY_START_TIME) {
             // 日付変更時間
             date = date.add(-1, 'days')
         }
@@ -44,16 +46,16 @@ module.exports = {
     },
 
     getMember: (id, needTypeDetail = true) => {
-        let member = CakeHash.extract(this.database, `members.{n}[id=${id}]`);
+        let member = CakeHash.extract(memberInfo.database, `members.{n}[id=${id}]`);
         if (member.length) {
             member = member[0];
-            if (needTypeDetail) member['type_detail'] = CakeHash.get(module.exports.types, member.type);
+            if (needTypeDetail) member['type_detail'] = CakeHash.get(memberInfo.types, member.type);
         }
         return member;
     },
 
     getMemberInfo: (id) => {
-        let member = module.exports.getMember(id)
+        let member = memberInfo.getMember(id)
         let text = `
 タイプ: ${member.type_detail.name}
 開始日: ${member.start_date}
@@ -69,20 +71,20 @@ module.exports = {
     },
 
     howMany: (id, adjustment = 0) => {
-        let member = module.exports.getMember(id)
+        let member = memberInfo.getMember(id)
         let start = moment(member.start_date);
-        let targetDate = module.exports.getToday().add(adjustment, 'days')
+        let targetDate = memberInfo.getToday().add(adjustment, 'days')
         let diff = targetDate.diff(start, 'days')
         let num = (Array.isArray(member.type_detail.total) && member.type_detail.total.length > diff) ? member.type_detail.total[diff] : member.type_detail.total;
         return `${(adjustment == 1 ? '明日' : '今日')}(${targetDate.format('YYYY/MM/DD')}) は ${diff + 1} 日目 ` + (num ? num + "回です。がんばろう！" : "おやすみです。しっかり休んでね")
     },
 
     addResult: (id, msg_content) => {
-        let member = module.exports.getMember(id, false)
+        let member = memberInfo.getMember(id, false)
         let num = msg_content.replace(/[^0-9]/g, '');
         let exists = false;
 
-        let today = module.exports.getToday()
+        let today = memberInfo.getToday()
         member.result.forEach((r, i) => {
             let tmpDate = moment(r.date)
             if (today.diff(tmpDate, 'days') == 0) {
@@ -102,13 +104,13 @@ module.exports = {
             if (a.date < b.date) return -1
             return 0
         });
-        this.database.members.forEach((d, i) => {
+        memberInfo.database.members.forEach((d, i) => {
             if (d.id == member.id) {
-                this.database.members[i] = member;
+                memberInfo.database.members[i] = member;
             }
         })
         // file write
-        fs.writeFileSync(dataFile, JSON.stringify(this.database));
+        fs.writeFileSync(dataFile, JSON.stringify(memberInfo.database));
         return true;
     },
 
@@ -117,7 +119,9 @@ module.exports = {
 
     backupJson: () => {
         let now = moment();
-        fs.writeFileSync(dataFile + "_" + now.format("YYYYMMDDHHmm"), JSON.stringify(this.database))
+        fs.writeFileSync(dataFile + "_" + now.format("YYYYMMDDHHmm"), JSON.stringify(memberInfo.database))
         //TODO: S3 バックアップ
     },
 }
+
+module.exports = memberInfo;
