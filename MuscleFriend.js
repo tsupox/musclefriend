@@ -18,6 +18,7 @@ const cron = require('node-cron');
 // modules
 const randomReply = require('./randomReply.js');
 const memberInfo = require('./memberInfo.js');
+const gachaReply = require('./gachaReply.js');
 
 /** token */
 const token = process.env.BOT_TOKEN;
@@ -150,6 +151,51 @@ bot.registerCommand("score", async (msg, args) => {
     ],
 });
 
+bot.registerCommand("gachalist", (msg, args) => {
+    return `<@!${msg.author.id}> ` + "```" + gachaReply.getList().join(' / ') + "```"
+}, {
+    // argsRequired: true,
+    description: "「ガチャ言葉」の一覧",
+    fullDescription: "登録されているガチャ言葉の一覧を返します。返答率は 1%。",
+    usage: "なし または　対象の言葉",
+    reactionButtonTimeout: 600000,
+    reactionButtons: [
+        deleteCommandResult
+    ],
+});
+
+bot.registerCommand("gachaadd", (msg, args) => {
+    let result = gachaReply.addCommand(args);
+    msg.addReaction('⭕');
+    return;
+}, {
+    argsRequired: true,
+    description: "「ガチャ言葉」を追加します。",
+    fullDescription: "ガチャ言葉を追加します。",
+    usage: "追加したいガチャ言葉",
+    reactionButtonTimeout: 600000,
+    reactionButtons: [
+        deleteCommandResult
+    ],
+});
+
+bot.registerCommand("gachadelete", (msg, args) => {
+    let result = gachaReply.deleteCommand(args);
+    if (result) {
+        msg.addReaction('⭕');
+    } else {
+        msg.addReaction('✖')
+    }
+}, {
+    argsRequired: true,
+    description: "「ガチャ言葉」を削除します",
+    fullDescription: "ガチャ言葉を削除します。完全一致で削除できます。",
+    usage: "削除したいガチャ言葉",
+    reactionButtonTimeout: 600000,
+    reactionButtons: [
+        deleteCommandResult
+    ],
+});
 
 
 
@@ -159,6 +205,7 @@ bot.registerCommand("score", async (msg, args) => {
 bot.on("ready", () => {
     memberInfo.init();
     randomReply.init();
+    gachaReply.init();
     console.log("Ready...");
 });
 
@@ -215,11 +262,7 @@ bot.on("messageCreate", async msg => {
             } else if (msg.content.match(/^らーまん(。)?$/g)) {
                 if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "らーまん");
             } else {
-                // TODO ガチャ言葉は外だし
-                if (Math.random() < 0.01) bot.createMessage(msg.channel.id, randomReply.getRandom([
-                    "何がなんでも仕留めろ", "逃がすな", "ぬるい方法では許さん", "根こそぎ奪え", "残さず絶やせ",
-                    "ぬこおおおおおおおハァハァかわいいよ撫でたいよ吸いたいよゴロンゴロンかわいいでちゅねえええええええ",
-                ]));
+                if (Math.random() < 0.01) bot.createMessage(msg.channel.id, gachaReply.getReply());
             }
         }
 
