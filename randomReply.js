@@ -7,7 +7,7 @@ const negaposiAnalyzer = require('negaposi-analyzer-ja');
 
 const dataFile = './data/conversation.json';
 
-let randomConversation = {
+let randomReply = {
     database: null,
     preparedReplies: {
         normal: [
@@ -28,7 +28,7 @@ let randomConversation = {
     },
 
     init: () => {
-        randomConversation.database = JSON.parse(fs.readFileSync(dataFile, "utf8"));
+        randomReply.database = JSON.parse(fs.readFileSync(dataFile, "utf8"));
     },
 
     getRandom: (array) => {
@@ -37,8 +37,8 @@ let randomConversation = {
 
     getList: () => {
         let list = [];
-        randomConversation.database.commands.forEach((c) => {
-            // list.push(`[${c.keyword}] - ${c.replyId}   ${randomConversation.database.replies[c.replyId]}`);
+        randomReply.database.commands.forEach((c) => {
+            // list.push(`[${c.keyword}] - ${c.replyId}   ${randomReply.database.replies[c.replyId]}`);
             list.push(`[${c.keyword}] - ${c.replyId}`); //TODO list は多くなってきたので DM に変更
         });
         return list;
@@ -46,16 +46,16 @@ let randomConversation = {
 
     getDetail: (keyword) => {
         let text = "";
-        randomConversation.database.commands.forEach((c) => {
+        randomReply.database.commands.forEach((c) => {
             if (keyword.match(new RegExp(c.keyword, 'g'))) {
-                text = `[${c.keyword}] - ${c.replyId}   ${randomConversation.database.replies[c.replyId]}`;
+                text = `[${c.keyword}] - ${c.replyId}   ${randomReply.database.replies[c.replyId]}`;
             }
         });
         return text;
     },
 
     existCommand: (keyword) => {
-        let commands = CakeHash.extract(randomConversation.database.commands, '{n}.keyword');
+        let commands = CakeHash.extract(randomReply.database.commands, '{n}.keyword');
         let result = keyword.match(new RegExp(commands.join('|'), 'g'))
         return result !== null;
     },
@@ -75,35 +75,35 @@ let randomConversation = {
             emoji: "",
         }
 
-        if (randomConversation.existCommand(keyword)) {
+        if (randomReply.existCommand(keyword)) {
             // 登録済みの言葉
-            randomConversation.database.commands.forEach((c) => {
+            randomReply.database.commands.forEach((c) => {
                 if (keyword.match(new RegExp(c.keyword, 'g'))) {
-                    let replies = randomConversation.database.replies[c.replyId].split(",");
-                    result.word = randomConversation.getRandom(replies);
+                    let replies = randomReply.database.replies[c.replyId].split(",");
+                    result.word = randomReply.getRandom(replies);
                 }
             });
         }
 
         if (result.word == "") {
             // 取れなかったとき
-            let wordList = randomConversation.preparedReplies.normal;
+            let wordList = randomReply.preparedReplies.normal;
             if (keyword.match(/(?:？|\?)$/g)) {
                 // question
-                wordList = randomConversation.preparedReplies.answer
+                wordList = randomReply.preparedReplies.answer
             } else {
                 // 取れなかったときはネガポジ判断をして登録
-                let score = await randomConversation.getNegaPosiScore(keyword);
+                let score = await randomReply.getNegaPosiScore(keyword);
                 console.log(`${score}  ${keyword}`)
                 if (score != 0) {
                     let negaPoji = score > 0 ? 'positive' : 'negative';
                     result.emoji = score > 0 ? "😄" : "😟";
-                    wordList = randomConversation.preparedReplies[negaPoji]
+                    wordList = randomReply.preparedReplies[negaPoji]
                 } else {
                     result.emoji = "🙄" // 😐
                 }
             }
-            result.word = randomConversation.getRandom(wordList);
+            result.word = randomReply.getRandom(wordList);
         }
         return result;
     },
@@ -114,7 +114,7 @@ let randomConversation = {
             console.log('add command but exist reply: ' + args.join(' '))   //TODO 監査ログに変更（他も全部）
 
             let randomReplyId = args[1].trim()
-            if (randomConversation.database.replies[randomReplyId] === undefined) {
+            if (randomReply.database.replies[randomReplyId] === undefined) {
                 // 存在しないランダム返信
                 return false;
             }
@@ -123,48 +123,48 @@ let randomConversation = {
                 keyword: args[0],
                 replyId: randomReplyId
             };
-            randomConversation.database.commands.push(save);
+            randomReply.database.commands.push(save);
 
-        } else if (!randomConversation.existCommand(args[0])) {
+        } else if (!randomReply.existCommand(args[0])) { //TODO 半角カンマやめる
             //insert
             console.log('add command: ' + args.join(' '))
 
             //ランダム返信
-            randomConversation.database.replies.push(args[1]);
+            randomReply.database.replies.push(args[1]);
             //コマンド
             let save = {
                 keyword: args[0],
-                replyId: randomConversation.database.replies.length - 1
+                replyId: randomReply.database.replies.length - 1
             };
-            randomConversation.database.commands.push(save);
+            randomReply.database.commands.push(save);
 
         } else {
             //edit reply
             console.log('edit reply: ' + args.join(' '))
 
-            randomConversation.database.commands.forEach((c) => {
+            randomReply.database.commands.forEach((c) => {
                 if (args[0].match(new RegExp(c.keyword))) {
                     //ランダム返信
-                    randomConversation.database.replies[c.replyId] = args[1];
+                    randomReply.database.replies[c.replyId] = args[1];
                 }
             });
         }
         //file write
-        fs.writeFileSync(dataFile, JSON.stringify(randomConversation.database));
+        fs.writeFileSync(dataFile, JSON.stringify(randomReply.database));
         return true;
     },
 
     deleteCommand: (args) => {
-        if (randomConversation.existCommand(args[0])) {
+        if (randomReply.existCommand(args[0])) {
             //delete
             console.log('delete command: ' + args.join(' '))
 
-            randomConversation.database.commands.forEach((c, i) => {
+            randomReply.database.commands.forEach((c, i) => {
                 if (args[0].match(new RegExp(c.keyword))) {
-                    randomConversation.database.commands.splice(i, 1)
+                    randomReply.database.commands.splice(i, 1)
                 }
             });
-            fs.writeFileSync(dataFile, JSON.stringify(randomConversation.database));
+            fs.writeFileSync(dataFile, JSON.stringify(randomReply.database));
             return true;
         } else {
             return false;
@@ -173,10 +173,10 @@ let randomConversation = {
 
     backupJson: () => {
         let now = moment();
-        fs.writeFileSync(dataFile + "_" + now.format("YYYYMMDDHHmm"), JSON.stringify(randomConversation.database))
+        fs.writeFileSync(dataFile + "_" + now.format("YYYYMMDDHHmm"), JSON.stringify(randomReply.database))
         //TODO: S3 バックアップ
     },
 
 }
 
-module.exports = randomConversation
+module.exports = randomReply

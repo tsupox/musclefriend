@@ -38,12 +38,15 @@ sample.env ... 環境変数サンプルファイル
 data/ ... 保存データ
 ├ conversation.json ... 登録済みの反応する言葉一覧
 └ result.json ... 30日チャレンジ結果一覧
+test/ ... UT ファイル
 ```
 
 
 ## テスト
 
 Using expect by chai.
+
+※ data ディレクトリ内のファイルを書き換えるので注意
 
 See;
 [Expect / Should \- Chai :  https://www.chaijs.com/api/bdd/](https://www.chaijs.com/api/bdd/)

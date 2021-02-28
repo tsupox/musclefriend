@@ -16,7 +16,7 @@ const CakeHash = require("cake-hash");
 const cron = require('node-cron');
 
 // modules
-const randomConversation = require('./randomConversation.js');
+const randomReply = require('./randomReply.js');
 const memberInfo = require('./memberInfo.js');
 
 /** token */
@@ -43,7 +43,7 @@ const getMentionedUser = (msg_content) => {
 const deleteCommandResult = {
     emoji: '🗑',
     type: 'edit',
-    response: (msg, args, user) => {    //TODO 秒数制限がありそう
+    response: (msg, args, user) => {
         let mentionedUserId = getMentionedUser(msg.content)
         if (mentionedUserId == user.id) msg.delete()
     }
@@ -53,8 +53,8 @@ bot.registerCommand("list", (msg, args) => {
     if (args.length) {
         //引数あり
         let text = "";
-        if (randomConversation.existCommand(args[0])) {
-            text = randomConversation.getDetail(args[0]);
+        if (randomReply.existCommand(args[0])) {
+            text = randomReply.getDetail(args[0]);
         }
         if (text) {
             msg.addReaction('⭕')
@@ -65,22 +65,23 @@ bot.registerCommand("list", (msg, args) => {
         }
     } else {
         //引数なし
-        return `<@!${msg.author.id}> ` + "```" + randomConversation.getList().join(' / ') + "```"
+        return `<@!${msg.author.id}> ` + "```" + randomReply.getList().join(' / ') + "```"
     }
 }, {
     // argsRequired: true,
     description: "返してくれる言葉一覧。",
     fullDescription: "[$list] で一覧を、 [$list 言葉] でその言葉で返されるランダムな言葉の一覧を表示します。",
     usage: "なし または　対象の言葉",
+    reactionButtonTimeout: 600000,
     reactionButtons: [
         deleteCommandResult
     ],
 });
 
-bot.registerCommand("add", (msg, args) => { //TODO add もDM対応するか・・・
+bot.registerCommand("add", (msg, args) => {
     if (args.length == 2) {
         //引数あり
-        let result = randomConversation.addCommand(args);
+        let result = randomReply.addCommand(args);
         if (result) {
             msg.addReaction('⭕');
         } else {
@@ -98,6 +99,7 @@ bot.registerCommand("add", (msg, args) => { //TODO add もDM対応するか・�
     description: "追加/修正します。",
     fullDescription: "存在しない言葉は新規登録を、すでに存在する言葉は与えられたランダム言葉で上書きします。\n今までの言葉を消したくない場合は、先に [$list 言葉] で登録されている内容を確認して、同じ言葉を再度登録する必要があります。",
     usage: "単語　ランダムに,返答,したい,言葉,カンマ区切り",
+    reactionButtonTimeout: 600000,
     reactionButtons: [
         deleteCommandResult
     ],
@@ -106,7 +108,7 @@ bot.registerCommand("add", (msg, args) => { //TODO add もDM対応するか・�
 bot.registerCommand("delete", (msg, args) => {
     if (args.length == 1) {
         //引数あり
-        let result = randomConversation.deleteCommand(args);
+        let result = randomReply.deleteCommand(args);
         if (result) {
             msg.addReaction('⭕');
         } else {
@@ -121,6 +123,7 @@ bot.registerCommand("delete", (msg, args) => {
     description: "削除します",
     fullDescription: "登録された言葉を削除します。",
     usage: "削除したい言葉",
+    reactionButtonTimeout: 600000,
     reactionButtons: [
         deleteCommandResult
     ],
@@ -129,7 +132,7 @@ bot.registerCommand("delete", (msg, args) => {
 bot.registerCommand("score", async (msg, args) => {
     if (args.length == 1) {
         //引数あり
-        let score = await randomConversation.getNegaPosiScore(args[0]);
+        let score = await randomReply.getNegaPosiScore(args[0]);
         msg.addReaction('⭕');
         return `\`${score}  ${args[0]}\``
     } else {
@@ -141,6 +144,7 @@ bot.registerCommand("score", async (msg, args) => {
     description: "ネガポジスコアをチェックします。",
     fullDescription: "文章からネガティブ／ポジティブのスコアを判定します。＋がポジティブ。－がネガティブ。",
     usage: "判定したい文章",
+    reactionButtonTimeout: 600000,
     reactionButtons: [
         deleteCommandResult
     ],
@@ -154,7 +158,7 @@ bot.registerCommand("score", async (msg, args) => {
  ********************/
 bot.on("ready", () => {
     memberInfo.init();
-    randomConversation.init();
+    randomReply.init();
     console.log("Ready...");
 });
 
@@ -182,7 +186,7 @@ bot.on("messageCreate", async msg => {
                     let adjustment = content.match(/明日/) ? 1 : 0;
                     bot.createMessage(msg.channel.id, memberInfo.howMany(msg.author.id, adjustment))
                 } else {
-                    let reply = await randomConversation.getReply(content)
+                    let reply = await randomReply.getReply(content)
                     if (reply.emoji) {
                         msg.addReaction(reply.emoji);
                     }
@@ -192,7 +196,7 @@ bot.on("messageCreate", async msg => {
                 //おわったー
                 if (content.match(/(?:やった|おわった|done|おわり|やりました|終わ)/g) && !content.match(/仕事/g)) {
                     let awesomeReactions = ["✨", "💯", "🎉", "👏"];
-                    msg.addReaction(randomConversation.getRandom(awesomeReactions));
+                    msg.addReaction(randomReply.getRandom(awesomeReactions));
 
                     //回数登録
                     memberInfo.addResult(msg.author.id, content)
@@ -202,15 +206,17 @@ bot.on("messageCreate", async msg => {
                 // TODO 開始登録
             }
 
-            // TODO ガチャ言葉は外だし
             if (msg.content.match(/^草$/)) {
                 if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "草");
             } else if (msg.content.match(/^えらい！/)) {
                 if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "えらい！");
             } else if (msg.content.match(/(?:ｗ|（笑）|\(笑\))/g)) {
                 if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "ｗｗｗ");
+            } else if (msg.content.match(/^らーまん(。)?$/g)) {
+                if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "らーまん");
             } else {
-                if (Math.random() < 0.01) bot.createMessage(msg.channel.id, randomConversation.getRandom([
+                // TODO ガチャ言葉は外だし
+                if (Math.random() < 0.01) bot.createMessage(msg.channel.id, randomReply.getRandom([
                     "何がなんでも仕留めろ", "逃がすな", "ぬるい方法では許さん", "根こそぎ奪え", "残さず絶やせ",
                     "ぬこおおおおおおおハァハァかわいいよ撫でたいよ吸いたいよゴロンゴロンかわいいでちゅねえええええええ",
                 ]));
@@ -222,7 +228,7 @@ bot.on("messageCreate", async msg => {
 
 // バックアップ
 cron.schedule('0 0 0,12 * * *', memberInfo.backupJson);
-cron.schedule('0 0 0,12 * * *', randomConversation.backupJson);
+cron.schedule('0 0 0,12 * * *', randomReply.backupJson);
 
 
 // Discord に接続します。
