@@ -49,6 +49,17 @@ describe('randomReply.js', async () => {
             expect(result).to.be.oneOf(['a', 'b', 'c', 'd', 'e'])
         });
     });
+    describe('joinArgs()', () => {
+        it('連結　引数が文字列', () => {
+            let result = randomReply.joinArgs('aaa')
+            expect(result).to.be.equal('aaa')
+        });
+        it('連結　引数が配列かつ全角カンマあり', () => {
+            let result = randomReply.joinArgs(['a', 'b', 'c', 'd', 'e，f'])
+            expect(result).to.be.equal('b,c,d,e,f')
+        });
+
+    });
     describe('getList()', () => {
         it('登録ランダム返信一覧取得', () => {
             setDatabase()
@@ -79,6 +90,13 @@ describe('randomReply.js', async () => {
             setDatabase()
             let result = randomReply.getDetail("起きた")
             expect(result).to.have.equals("[起き] - 1   おはよー,よく寝れた？,おはよう！")
+        });
+    });
+    describe('getDetailArray()', () => {
+        it('登録ランダム返信詳細「配列」取得', () => {
+            setDatabase()
+            let result = randomReply.getDetailArray("起きた")
+            expect(result).to.have.deep.equals({ keyword: "起き", replyId: 1, reply: "おはよー,よく寝れた？,おはよう！" })
         });
     });
     describe('existCommand()', () => {
@@ -127,7 +145,7 @@ describe('randomReply.js', async () => {
         });
     });
     describe('addCommand()', () => {
-        it('ランダム返信登録 - 新規登録', () => {
+        it('ランダム返信登録 - 新規登録(カンマ)', () => {
             setDatabase()
             let repliesLength = randomReply.database.replies.length
             let commandsLength = randomReply.database.commands.length
@@ -144,17 +162,19 @@ describe('randomReply.js', async () => {
             let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
             expect(resultFile).to.deep.equals(randomReply.database)
         });
-        it('ランダム返信登録 - 更新', () => {
+        it('ランダム返信登録 - 新規登録(スペース区切り)', () => {
             setDatabase()
             let repliesLength = randomReply.database.replies.length
             let commandsLength = randomReply.database.commands.length
 
-            let result = randomReply.addCommand(["おやすみ", "テスト２,テスト3"])
+            let result = randomReply.addCommand(["テスト", "スペースで登録", "テスト返信２"])
             // assert result
             expect(result).to.be.true
             // assert variable
-            expect(randomReply.database.replies).to.have.lengthOf(repliesLength)
-            expect(randomReply.database.replies[3]).to.deep.equal("テスト２,テスト3")
+            expect(randomReply.database.replies).to.have.lengthOf(repliesLength + 1)
+            expect(randomReply.database.replies[repliesLength]).to.deep.equal("スペースで登録,テスト返信２")
+            expect(randomReply.database.commands).to.have.lengthOf(commandsLength + 1)
+            expect(randomReply.database.commands[commandsLength]).to.deep.equal({ keyword: 'テスト', replyId: repliesLength })
             // assert file data
             let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
             expect(resultFile).to.deep.equals(randomReply.database)
@@ -188,6 +208,50 @@ describe('randomReply.js', async () => {
             expect(resultFile).to.deep.equals(randomReply.database)
         });
     });
+    describe('editCommand()', () => {
+        it('ランダム返信登録 - 更新（カンマ）', () => {
+            setDatabase()
+            let repliesLength = randomReply.database.replies.length
+            let commandsLength = randomReply.database.commands.length
+
+            let result = randomReply.editCommand(["おやすみ", "テスト２,テスト3"])
+            // assert result
+            expect(result).to.be.true
+            // assert variable
+            expect(randomReply.database.replies).to.have.lengthOf(repliesLength)
+            expect(randomReply.database.replies[3]).to.deep.equal("テスト２,テスト3")
+            // assert file data
+            let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
+            expect(resultFile).to.deep.equals(randomReply.database)
+        });
+        it('ランダム返信登録 - 更新（スペース区切り）', () => {
+            setDatabase()
+            let repliesLength = randomReply.database.replies.length
+            let commandsLength = randomReply.database.commands.length
+
+            let result = randomReply.editCommand(["おわった", "テスト４", "テスト5"])
+            // assert result
+            expect(result).to.be.true
+            // assert variable
+            expect(randomReply.database.replies).to.have.lengthOf(repliesLength)
+            expect(randomReply.database.replies[4]).to.deep.equal("テスト４,テスト5")
+            // assert file data
+            let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
+            expect(resultFile).to.deep.equals(randomReply.database)
+        });
+        it('ランダム返信登録 - 存在しない', () => {
+            setDatabase()
+            let repliesLength = randomReply.database.replies.length
+            let commandsLength = randomReply.database.commands.length
+
+            let result = randomReply.editCommand(["存在しない言葉", "存在しない言葉を登録", "テスト返信"])
+            // assert result
+            expect(result).to.be.false
+            // assert variable
+            expect(randomReply.database.replies).to.have.lengthOf(repliesLength)
+            expect(randomReply.database.commands).to.have.lengthOf(commandsLength)
+        });
+    })
     describe('deleteCommand()', () => {
         it('ランダム返信削除 - 言葉が存在する場合', () => {
             setDatabase()

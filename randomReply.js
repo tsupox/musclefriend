@@ -35,6 +35,13 @@ let randomReply = {
         return array[Math.floor(Math.random() * array.length)];
     },
 
+    joinArgs: (args) => {
+        if (args instanceof Array) {
+            return args.slice(1, args.length).join(',').replace('，', ',')
+        }
+        return args
+    },
+
     getList: () => {
         let list = [];
         randomReply.database.commands.forEach((c) => {
@@ -52,6 +59,16 @@ let randomReply = {
             }
         });
         return text;
+    },
+
+    getDetailArray: (keyword) => {
+        let result = null;
+        randomReply.database.commands.forEach((c) => {
+            if (keyword.match(new RegExp(c.keyword, 'g'))) {
+                result = { keyword: c.keyword, replyId: c.replyId, reply: randomReply.database.replies[c.replyId] }
+            }
+        });
+        return result;
     },
 
     existCommand: (keyword) => {
@@ -124,34 +141,41 @@ let randomReply = {
                 replyId: randomReplyId
             };
             randomReply.database.commands.push(save);
-
-        } else if (!randomReply.existCommand(args[0])) { //TODO 半角カンマやめる
+        } else {
             //insert
             console.log('add command: ' + args.join(' '))
 
             //ランダム返信
-            randomReply.database.replies.push(args[1]);
+            randomReply.database.replies.push(randomReply.joinArgs(args));
             //コマンド
             let save = {
                 keyword: args[0],
                 replyId: randomReply.database.replies.length - 1
             };
             randomReply.database.commands.push(save);
-
-        } else {
-            //edit reply
-            console.log('edit reply: ' + args.join(' '))
-
-            randomReply.database.commands.forEach((c) => {
-                if (args[0].match(new RegExp(c.keyword))) {
-                    //ランダム返信
-                    randomReply.database.replies[c.replyId] = args[1];
-                }
-            });
         }
         //file write
         fs.writeFileSync(dataFile, JSON.stringify(randomReply.database));
         return true;
+    },
+
+    editCommand: (args) => {
+        console.log('edit reply: ' + args.join(' '))
+
+        if (!randomReply.existCommand(args[0])) {
+            return false
+        } else {
+            randomReply.database.commands.forEach((c) => {
+                if (args[0].match(new RegExp(c.keyword))) {
+                    //ランダム返信
+                    randomReply.database.replies[c.replyId] = randomReply.joinArgs(args);
+                }
+            });
+
+            //file write
+            fs.writeFileSync(dataFile, JSON.stringify(randomReply.database));
+            return true;
+        }
     },
 
     deleteCommand: (args) => {

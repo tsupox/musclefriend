@@ -79,27 +79,91 @@ bot.registerCommand("list", (msg, args) => {
     ],
 });
 
-bot.registerCommand("add", (msg, args) => {
-    if (args.length == 2) {
+bot.registerCommand("check", (msg, args) => {
+    if (args.length) {
         //引数あり
-        let result = randomReply.addCommand(args);
-        if (result) {
-            msg.addReaction('⭕');
+        if (randomReply.existCommand(args[0])) {
+            let existed = randomReply.getDetailArray(args[0]);
+            msg.addReaction('⭕')
+            return `<@!${msg.author.id}> 登録済み　修正: \`$edit ${existed.keyword} ${existed.reply.split(',').join(' ')}\`　削除: \`$delete ${existed.keyword}\``;
         } else {
-            msg.addReaction('✖')
+            msg.addReaction('⭕')
+            return `<@!${msg.author.id}> 未登録　新規登録: \`$add ${args[0]} 登録したい　言葉\``;
         }
-        return;
+    } else {
+        //引数なし
+        return `<@!${msg.author.id}> 確認したい言葉を指定してください。`
+    }
+}, {
+    // argsRequired: true,
+    description: "登録済みか未登録かを確認します。",
+    fullDescription: "登録済みか未登録かを確認します。また、追加時／修正時／削除時のコマンドも返します。",
+    usage: "対象の言葉",
+    reactionButtonTimeout: 600000,
+    reactionButtons: [
+        deleteCommandResult
+    ],
+});
+
+bot.registerCommand("add", (msg, args) => {
+    if (args.length >= 2) {
+        if (randomReply.existCommand(args[0])) {
+            let existed = randomReply.getDetailArray(args[0])
+            msg.addReaction('✖');
+            return `<@!${msg.author.id}> 登録済みです。 更新時の参考コマンド（追加はこの後ろに）・・・　\`$edit　${existed.keyword} ${existed.reply.split(',').join(' ')}\``
+
+        } else {
+            let result = randomReply.addCommand(args);
+            if (result) {
+                msg.addReaction('⭕');
+            } else {
+                msg.addReaction('✖')
+            }
+            return;
+        }
 
     } else {
-        //引数なし or カンマ区切りでない
+        //引数なし
         msg.addReaction('✖')
-        return `<@!${msg.author.id}> ` + "`使い方: [$add 単語　ランダムに,返答,したい,言葉,カンマ区切り]　半角カンマで区切ってください`"
+        return `<@!${msg.author.id}> ` + "`使い方: [$add 単語　ランダムに 返答　したい　言葉]　登録したい言葉をカンマもしくはスペースで区切ってください。読点「、」は区切りとなりません。`"
     }
 }, {
     argsRequired: true,
-    description: "追加/修正します。",
-    fullDescription: "存在しない言葉は新規登録を、すでに存在する言葉は与えられたランダム言葉で上書きします。\n今までの言葉を消したくない場合は、先に [$list 言葉] で登録されている内容を確認して、同じ言葉を再度登録する必要があります。",
-    usage: "単語　ランダムに,返答,したい,言葉,カンマ区切り",
+    description: "追加します。",
+    fullDescription: "新規登録を登録します。すでに存在する言葉は登録できません（$edit を使用してください）",
+    usage: "単語　ランダムに 返答 したい 言葉",
+    reactionButtonTimeout: 600000,
+    reactionButtons: [
+        deleteCommandResult
+    ],
+});
+
+bot.registerCommand("edit", (msg, args) => {
+    if (args.length >= 2) {
+        if (!randomReply.existCommand(args[0])) {
+            msg.addReaction('✖');
+            return `<@!${msg.author.id}> 未登録です。 $add コマンドを使ってください。　\`$add　${args[0]} ${args.splice(1, args.length).join(' ')}\``
+
+        } else {
+            let result = randomReply.editCommand(args);
+            if (result) {
+                msg.addReaction('⭕');
+            } else {
+                msg.addReaction('✖')
+            }
+            return;
+        }
+
+    } else {
+        //引数なし
+        msg.addReaction('✖')
+        return `<@!${msg.author.id}> ` + "`使い方: [$edit 単語　修正 したい　言葉]　修正したい言葉をカンマもしくはスペースで区切ってください。`"
+    }
+}, {
+    argsRequired: true,
+    description: "修正します。",
+    fullDescription: "すでに存在する言葉を上書きします。存在しない言葉は登録できません（$add を使用してください）",
+    usage: "単語　ランダムに 返答 したい 言葉",
     reactionButtonTimeout: 600000,
     reactionButtons: [
         deleteCommandResult
@@ -251,6 +315,7 @@ bot.on("messageCreate", async msg => {
                 }
 
                 // TODO 開始登録
+                // TODO 複数登録
             }
 
             if (msg.content.match(/^草$/)) {
