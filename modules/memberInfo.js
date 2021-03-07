@@ -49,7 +49,11 @@ let memberInfo = {
         let member = CakeHash.extract(memberInfo.database, `members.{n}[id=${id}]`);
         if (member.length) {
             member = member[0];
-            if (needTypeDetail) member['type_detail'] = CakeHash.get(memberInfo.types, member.type);
+            if (needTypeDetail) {
+                member['type_detail'] = CakeHash.get(memberInfo.types, member.type);
+            } else {
+                delete member.type_detail
+            }
         }
         return member;
     },
@@ -85,6 +89,8 @@ let memberInfo = {
         let exists = false;
 
         let today = memberInfo.getToday()
+
+        //checking whether today's result is already reported 
         member.result.forEach((r, i) => {
             let tmpDate = moment(r.date)
             if (today.diff(tmpDate, 'days') == 0) {
@@ -104,6 +110,8 @@ let memberInfo = {
             if (a.date < b.date) return -1
             return 0
         });
+
+        //overwrite
         memberInfo.database.members.forEach((d, i) => {
             if (d.id == member.id) {
                 memberInfo.database.members[i] = member;

@@ -21,8 +21,7 @@
   },
   "scripts": {
     "test": "mocha test/",
-    "start": "npm MuscleFriend.js",
-    "start dev": "nodemon MuscleFriend.js --ignore data/*"
+    "start": "nodemon MuscleFriend.js --ignore data/*"
   },
   "repository": {
     "type": "git",
