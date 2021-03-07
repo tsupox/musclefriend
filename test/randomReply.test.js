@@ -2,7 +2,7 @@ const fs = require('fs')
 const expect = require('chai').expect
 const mockedEnv = require('mocked-env')
 const mockDate = require('mockdate');
-const randomReply = require('../randomReply.js');
+const randomReply = require('../modules/randomReply.js');
 const dataFile = './data/conversation.json';
 
 // set mock env

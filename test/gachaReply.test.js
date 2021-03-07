@@ -2,7 +2,7 @@ const fs = require('fs')
 const expect = require('chai').expect
 const mockedEnv = require('mocked-env')
 const mockDate = require('mockdate');
-const gachaReply = require('../gachaReply.js');
+const gachaReply = require('../modules/gachaReply.js');
 const dataFile = './data/gachaReply.json';
 
 // set mock env
@@ -40,8 +40,10 @@ describe('gachaReply.js', () => {
             // assert result
             expect(result).to.be.true
             // assert variable
-            expect(gachaReply.database).to.have.lengthOf(gachaLength + 1)
-            expect(gachaReply.database[gachaLength]).to.deep.equal("テストテスト テストー")
+            expect(gachaReply.database).to.have.lengthOf(gachaLength + 2)
+            console.log(gachaReply.database)
+            expect(gachaReply.database[gachaLength]).to.deep.equal("テストテスト")
+            expect(gachaReply.database[gachaLength + 1]).to.deep.equal("テストー")
             // assert file data
             let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
             expect(resultFile).to.deep.equals(gachaReply.database)

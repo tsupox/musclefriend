@@ -2,7 +2,7 @@ const fs = require('fs')
 const expect = require('chai').expect
 const mockedEnv = require('mocked-env')
 const mockDate = require('mockdate');
-const memberInfo = require('../memberInfo.js');
+const memberInfo = require('../modules/memberInfo.js');
 const dataFile = './data/result.json';
 
 // set mock env

@@ -22,8 +22,9 @@ let gachaReply = {
         //insert
         console.log('add gacha: ' + args.join(' '))
 
-        //ランダム返信
-        gachaReply.database.push(args.join(' '));
+        args.forEach((a, i) => {
+            gachaReply.database.push(a);
+        })
         //file write
         fs.writeFileSync(dataFile, JSON.stringify(gachaReply.database));
         return true;
@@ -32,7 +33,7 @@ let gachaReply = {
     deleteCommand: (args) => {
         //delete
         let exist = false;
-        console.log('delete command: ' + args.join(' '))
+        console.log('delete command: ' + args[0])
 
         gachaReply.database.forEach((c, i) => {
             if (args.join(" ").match(new RegExp("^" + c + "$"))) {

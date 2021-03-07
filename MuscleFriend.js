@@ -16,9 +16,9 @@ const CakeHash = require("cake-hash");
 const cron = require('node-cron');
 
 // modules
-const randomReply = require('./randomReply.js');
-const memberInfo = require('./memberInfo.js');
-const gachaReply = require('./gachaReply.js');
+const randomReply = require('./modules/randomReply.js');
+const memberInfo = require('./modules/memberInfo.js');
+const gachaReply = require('./modules/gachaReply.js');
 
 /** token */
 const token = process.env.BOT_TOKEN;
@@ -324,8 +324,6 @@ bot.on("messageCreate", async msg => {
                 if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "えらい！");
             } else if (msg.content.match(/(?:ｗ|（笑）|\(笑\))/g)) {
                 if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "ｗｗｗ");
-            } else if (msg.content.match(/^らーまん(。)?$/g)) {
-                if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "らーまん");
             } else {
                 if (Math.random() < 0.01) bot.createMessage(msg.channel.id, gachaReply.getReply());
             }
@@ -337,6 +335,7 @@ bot.on("messageCreate", async msg => {
 // バックアップ
 cron.schedule('0 0 0,12 * * *', memberInfo.backupJson);
 cron.schedule('0 0 0,12 * * *', randomReply.backupJson);
+cron.schedule('0 0 0,12 * * *', gachaReply.backupJson);
 
 
 // Discord に接続します。
