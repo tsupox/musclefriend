@@ -317,16 +317,16 @@ bot.on("messageCreate", async msg => {
                 // TODO 開始登録
                 // TODO 複数登録
             }
+        }
 
-            if (msg.content.match(/^草$/)) {
-                if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "草");
-            } else if (msg.content.match(/^えらい！/)) {
-                if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "えらい！");
-            } else if (msg.content.match(/(?:ｗ|（笑）|\(笑\))/g)) {
-                if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "ｗｗｗ");
-            } else {
-                if (Math.random() < 0.01) bot.createMessage(msg.channel.id, gachaReply.getReply());
-            }
+        if (msg.content.match(/^草$/)) {
+            if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "草");
+        } else if (msg.content.match(/^えらい！/)) {
+            if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "えらい！");
+        } else if (msg.content.match(/(?:ｗ|（笑）|\(笑\))/g)) {
+            if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "ｗｗｗ");
+        } else {
+            if (Math.random() < 0.01) bot.createMessage(msg.channel.id, gachaReply.getReply());
         }
 
     }
