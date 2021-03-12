@@ -1,6 +1,7 @@
 const fs = require("fs");
 const moment = require("moment");
 const randomReply = require('./randomReply.js');
+const util = require('./util.js');
 const dataFile = './data/gachaReply.json';
 
 let gachaReply = {
@@ -22,9 +23,8 @@ let gachaReply = {
         //insert
         console.log('add gacha: ' + args.join(' '))
 
-        args.forEach((a, i) => {
-            gachaReply.database.push(a);
-        })
+        gachaReply.database.push(args.join(' '));
+
         //file write
         fs.writeFileSync(dataFile, JSON.stringify(gachaReply.database));
         return true;
@@ -33,10 +33,10 @@ let gachaReply = {
     deleteCommand: (args) => {
         //delete
         let exist = false;
-        console.log('delete command: ' + args[0])
+        console.log('delete command: ' + args.join(' '))
 
         gachaReply.database.forEach((c, i) => {
-            if (args.join(" ").match(new RegExp("^" + c + "$"))) {
+            if (args.join(" ").match(new RegExp("^" + util.escapeRegExp(c) + "$"))) {
                 gachaReply.database.splice(i, 1)
                 exist = true;
             }

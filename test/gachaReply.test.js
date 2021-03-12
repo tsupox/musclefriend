@@ -12,7 +12,7 @@ const dataFile = './data/gachaReply.json';
 
 const setDatabase = () => {
     gachaReply.database = [
-        "テスト1", "テスト2", "テスト3"
+        "テスト1", "テスト2", "テスト3", "([.]*.)"
     ]
 }
 
@@ -21,14 +21,14 @@ describe('gachaReply.js', () => {
         it('登録ガチャ言葉一覧取得', () => {
             setDatabase()
             let result = gachaReply.getList()
-            expect(result).to.have.deep.equals(["テスト1", "テスト2", "テスト3"])
+            expect(result).to.have.deep.equals(["テスト1", "テスト2", "テスト3", "([.]*.)"])
         });
     });
     describe('getReply()', () => {
         it('登録済みのガチャ言葉', () => {
             setDatabase()
             let result = gachaReply.getReply()
-            expect(result).to.be.oneOf(["テスト1", "テスト2", "テスト3"])
+            expect(result).to.be.oneOf(["テスト1", "テスト2", "テスト3", "([.]*.)"])
         });
     });
     describe('addCommand()', () => {
@@ -40,10 +40,9 @@ describe('gachaReply.js', () => {
             // assert result
             expect(result).to.be.true
             // assert variable
-            expect(gachaReply.database).to.have.lengthOf(gachaLength + 2)
+            expect(gachaReply.database).to.have.lengthOf(gachaLength + 1)
             console.log(gachaReply.database)
-            expect(gachaReply.database[gachaLength]).to.deep.equal("テストテスト")
-            expect(gachaReply.database[gachaLength + 1]).to.deep.equal("テストー")
+            expect(gachaReply.database[gachaLength]).to.deep.equal("テストテスト テストー")
             // assert file data
             let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
             expect(resultFile).to.deep.equals(gachaReply.database)
@@ -60,6 +59,20 @@ describe('gachaReply.js', () => {
             // assert variable
             expect(gachaReply.database).to.have.lengthOf(gachaLength - 1)
             expect(gachaReply.database[1]).to.not.deep.equal("テスト2")
+            // assert file data
+            let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
+            expect(resultFile).to.deep.equals(gachaReply.database)
+        });
+        it('ガチャ言葉削除 - エスケープが必要な文字', () => {
+            setDatabase()
+            let gachaLength = gachaReply.database.length
+
+            let result = gachaReply.deleteCommand(["([.]*.)"])
+            // assert result
+            expect(result).to.be.true
+            // assert variable
+            expect(gachaReply.database).to.have.lengthOf(gachaLength - 1)
+            expect(gachaReply.database[1]).to.not.deep.equal("([.]*.)")
             // assert file data
             let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
             expect(resultFile).to.deep.equals(gachaReply.database)
