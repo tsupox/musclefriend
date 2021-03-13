@@ -50,6 +50,9 @@ const deleteCommandResult = {
     }
 };
 
+// **************
+// ランダム返信用コマンド
+// **************
 bot.registerCommand("list", (msg, args) => {
     if (args.length) {
         //引数あり
@@ -194,6 +197,9 @@ bot.registerCommand("delete", (msg, args) => {
     ],
 });
 
+// **************
+// ネガポジスコア確認用コマンド
+// **************
 bot.registerCommand("score", async (msg, args) => {
     if (args.length == 1) {
         //引数あり
@@ -215,6 +221,9 @@ bot.registerCommand("score", async (msg, args) => {
     ],
 });
 
+// **************
+// ガチャ言葉用コマンド
+// **************
 bot.registerCommand("gachalist", (msg, args) => {
     return `<@!${msg.author.id}> ` + "```" + gachaReply.getList().join(' / ') + "```"
 }, {
@@ -260,6 +269,41 @@ bot.registerCommand("gachadelete", (msg, args) => {
         deleteCommandResult
     ],
 });
+
+// **************
+// トレーニング開始登録用コマンド
+// **************
+bot.registerCommand("trainingadd", (msg, args) => {
+    //id, name, typeId, typeName) => {
+    if (args.length >= 1) {
+        if (args.length == 1) {
+            args.push('トレーニング')
+        }
+        const typeName = args.splice(1).join('')
+        let result = memberInfo.addNewTraining(msg.author.id, msg.author.username, args[0], typeName)
+        if (result) {
+            msg.addReaction('⭕');
+        } else {
+            msg.addReaction('✖')
+            return `<@!${msg.author.id}> ` + "`使い方: [$trainingadd トレーニングタイプ（以下から選択）　トレーニング名]　\n" + memberInfo.getTrainingTypes() + "`"
+        }
+
+    } else {
+        //引数なし
+        msg.addReaction('✖')
+        return `<@!${msg.author.id}> ` + "`使い方: [$trainingadd トレーニングタイプ（以下から選択）　トレーニング名（free の場合のみ)]　\n" + memberInfo.getTrainingTypes() + "`"
+    }
+}, {
+    argsRequired: true,
+    description: "トレーニング開始を申告します。",
+    fullDescription: "新しいトレーニング開始を申告します。",
+    usage: "トレーニングタイプ　トレーニング名称（free の場合のみ)",
+    reactionButtonTimeout: 600000,
+    reactionButtons: [
+        deleteCommandResult
+    ],
+});
+
 
 
 
@@ -313,9 +357,6 @@ bot.on("messageCreate", async msg => {
                     memberInfo.addResult(msg.author.id, content)
                     bot.createMessage(msg.channel.id, memberInfo.getMemberInfo(msg.author.id))
                 }
-
-                // TODO 開始登録
-                // TODO 複数登録
             }
         }
 

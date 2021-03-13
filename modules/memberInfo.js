@@ -85,9 +85,9 @@ let memberInfo = {
             let diff = targetDate.diff(start, 'days')
             if (Array.isArray(currentTraining.type_detail.total) && currentTraining.type_detail.total.length > diff) {
                 let num = currentTraining.type_detail.total[diff]
-                return `${(adjustment == 1 ? '明日' : '今日')}(${targetDate.format('YYYY/MM/DD')}) は ${diff + 1} 日目 ` + (num ? num + "回です。がんばろう！" : "おやすみです。しっかり休んでね")
+                return `${(adjustment == 1 ? '明日' : '今日')}(${targetDate.format('YYYY/MM/DD')}) は ${diff + 1} 日目 ` + (num ? num + " 回です。がんばろう！" : "おやすみです。しっかり休んでね")
             } else {
-                return `${(adjustment == 1 ? '明日' : '今日')}(${targetDate.format('YYYY/MM/DD')}) は ${diff + 1} 日目なので ${currentTraining.type_detail.total.length} 日チャンレジ終了です！よくがんばったね。`
+                return `${(adjustment == 1 ? '明日' : '今日')}(${targetDate.format('YYYY/MM/DD')}) は ${diff + 1} 日目なので ${currentTraining.type_detail.total.length} 日チャレンジ終了です！よくがんばったね。ぜひ新しいトレーニングを登録して継続してね。`
             }
         }
     },

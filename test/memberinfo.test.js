@@ -60,8 +60,6 @@ const setDatabase = () => {
         ]
     }
 }
-// TODO: 結果は全部出す
-// TODO: 新規追加できる
 // TODO: (コメントも残したい)
 describe('memberInfo.js', () => {
     describe('getToday()', () => {
@@ -122,21 +120,21 @@ describe('memberInfo.js', () => {
             setDatabase()
             mockDate.set('2021-02-27')
             let result = memberInfo.howMany('1')  //id: 1
-            expect(result).to.equal('今日(2021/02/27) は 14 日目 85回です。がんばろう！')
+            expect(result).to.equal('今日(2021/02/27) は 14 日目 85 回です。がんばろう！')
             mockDate.reset()
         });
         it('明日何回？', () => {
             setDatabase()
             mockDate.set('2021-02-27')
             let result = memberInfo.howMany('1', 1)  //id: 1
-            expect(result).to.equal('明日(2021/02/28) は 15 日目 90回です。がんばろう！')
+            expect(result).to.equal('明日(2021/02/28) は 15 日目 90 回です。がんばろう！')
             mockDate.reset()
         });
         it('今日何回？ - 30 日チャレンジ終了後', () => {
             setDatabase()
             mockDate.set('2021-03-16')
             let result = memberInfo.howMany('1')  //id: 1
-            expect(result).to.equal('今日(2021/03/16) は 31 日目なので 30 日チャンレジ終了です！よくがんばったね。')
+            expect(result).to.equal('今日(2021/03/16) は 31 日目なので 30 日チャレンジ終了です！よくがんばったね。ぜひ新しいトレーニングを登録して継続してね。')
             mockDate.reset()
         });
         it('今日何回？ - 対応してない', () => {
