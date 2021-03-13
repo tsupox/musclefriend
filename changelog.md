@@ -1,5 +1,9 @@
 # Change logs
 
+- result.json すべて trainings を配列にする
+- abs_roller 消した
+- free 追加
+
 【v0.9.2】
 ・$gachaadd でスペース区切りで複数言葉を追加できるようにしました ←　取り消しました。
 ・$gachadelete で削除できなかった問題を修正。 半角カッコがダメだったみたいでした。
