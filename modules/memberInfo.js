@@ -12,23 +12,17 @@ let memberInfo = {
     types: {
         "squat_30_easy": {
             name: "スクワット30日チャレンジ (beginner)",
-            limit_date: 30,
             total: [20, 25, 30, null, 40, 45, 50, null, 60, 65, 70, null, 80, 85, 90, null, 100, 105, 110, null, 115, 120, 125, null, 130, 135, 140, null, 145, 150]
         },
         "squat_30_hard": {
             name: "スクワット30日チャレンジ (normal)",
-            limit_date: 30,
             total: [50, 55, 60, null, 70, 75, 80, null, 100, 105, 115, null, 130, 135, 140, null, 150, 155, 160, null, 180, 185, 190, null, 220, 225, 230, null, 240, 250]
         },
         "squat_7_second": {
             name: "7秒スクワット",
-            limit_date: 0,
-            total: 30
         },
-        "abs_roller": {
-            name: "腹筋ローラー",
-            limit_date: 0,
-            total: 100
+        "free": {
+            name: "自由",
         }
     },
 
@@ -42,81 +36,153 @@ let memberInfo = {
             // 日付変更時間
             date = date.add(-1, 'days')
         }
-        return moment(date.format('YYYY-MM-DD'))    // 時刻を 0 時にする（日付計算でおかしくなるため９
+        return moment(date.format('YYYY-MM-DD'))    // 時刻を 0 時にする（日付計算でおかしくなるため）
     },
 
     getMember: (id, needTypeDetail = true) => {
         let member = CakeHash.extract(memberInfo.database, `members.{n}[id=${id}]`);
         if (member.length) {
             member = member[0];
-            if (needTypeDetail) {
-                member['type_detail'] = CakeHash.get(memberInfo.types, member.type);
-            } else {
-                delete member.type_detail
-            }
+            member.trainings.forEach((t, i) => {
+                if (needTypeDetail && t.type != 'free') {
+                    member.trainings[i]['type_detail'] = CakeHash.get(memberInfo.types, t.type);
+                } else {
+                    delete member.trainings[i].type_detail
+                }
+            })
+        } else {
+            member = null;
         }
         return member;
     },
 
     getMemberInfo: (id) => {
         let member = memberInfo.getMember(id)
-        let text = `
-タイプ: ${member.type_detail.name}
-開始日: ${member.start_date}
-`;
-        let total = 0;
-        member.result.forEach((r, i) => {
-            text += `${r.date}: ${r.total}回　`;
-            if (i % 3 == 2 && i != (member.result.length - 1)) text += `\n`
-            if (r.total) total += (r.total * 1)
+        let text = '';
+        member.trainings.forEach((t) => {
+            text += `タイプ: ${t.type_detail ? t.type_detail.name : t.name}\n`;
+            text += `開始日: ${t.start_date}\n`;
+
+            let total = 0;
+            t.result.forEach((r, i) => {
+                text += `${r.date}: ${r.total}回　`;
+                if (i % 3 == 2 && i != (t.result.length - 1)) text += `\n`
+                if (r.total) total += (r.total * 1)
+            });
+            text += `\n合計 ${total} 回やりました！\n`
         });
-        text += `\n合計 ${total} 回やりました！`
         return text;
     },
 
     howMany: (id, adjustment = 0) => {
         let member = memberInfo.getMember(id)
-        let start = moment(member.start_date);
-        let targetDate = memberInfo.getToday().add(adjustment, 'days')
-        let diff = targetDate.diff(start, 'days')
-        let num = (Array.isArray(member.type_detail.total) && member.type_detail.total.length > diff) ? member.type_detail.total[diff] : member.type_detail.total;
-        return `${(adjustment == 1 ? '明日' : '今日')}(${targetDate.format('YYYY/MM/DD')}) は ${diff + 1} 日目 ` + (num ? num + "回です。がんばろう！" : "おやすみです。しっかり休んでね")
+        let currentTraining = member.trainings.slice(-1)[0]
+        if (currentTraining.type == 'free') {
+            return 'このトレーニングは回数自由です。好きなだけがんばろう！'
+        } else {
+            let start = moment(currentTraining.start_date);
+            let targetDate = memberInfo.getToday().add(adjustment, 'days')
+            let diff = targetDate.diff(start, 'days')
+            if (Array.isArray(currentTraining.type_detail.total) && currentTraining.type_detail.total.length > diff) {
+                let num = currentTraining.type_detail.total[diff]
+                return `${(adjustment == 1 ? '明日' : '今日')}(${targetDate.format('YYYY/MM/DD')}) は ${diff + 1} 日目 ` + (num ? num + "回です。がんばろう！" : "おやすみです。しっかり休んでね")
+            } else {
+                return `${(adjustment == 1 ? '明日' : '今日')}(${targetDate.format('YYYY/MM/DD')}) は ${diff + 1} 日目なので ${currentTraining.type_detail.total.length} 日チャンレジ終了です！よくがんばったね。`
+            }
+        }
     },
 
     addResult: (id, msg_content) => {
         let member = memberInfo.getMember(id, false)
+        let currentTraining = member.trainings.slice(-1)[0]
         let num = msg_content.replace(/[^0-9]/g, '');
         let exists = false;
 
         let today = memberInfo.getToday()
 
         //checking whether today's result is already reported 
-        member.result.forEach((r, i) => {
+        currentTraining.result.forEach((r, i) => {
             let tmpDate = moment(r.date)
             if (today.diff(tmpDate, 'days') == 0) {
-                member.result[i].total = num;
+                currentTraining.result[i].total = num;
                 exists = true;
             }
         })
         if (exists == false) {
-            member.result.push({
+            currentTraining.result.push({
                 "date": today.format('YYYY-MM-DD'),
                 "status": "done",
                 "total": num
             })
         }
-        member.result.sort((a, b) => {
+        currentTraining.result.sort((a, b) => {
             if (a.date > b.date) return 1
             if (a.date < b.date) return -1
             return 0
         });
 
         //overwrite
+        member.trainings[member.trainings.length - 1] = currentTraining
         memberInfo.database.members.forEach((d, i) => {
             if (d.id == member.id) {
                 memberInfo.database.members[i] = member;
             }
         })
+        // file write
+        fs.writeFileSync(dataFile, JSON.stringify(memberInfo.database));
+        return true;
+    },
+
+    getTrainingTypes: () => {
+        let text = '';
+        Object.keys(memberInfo.types).forEach((typeId) => {
+            let t = memberInfo.types[typeId]
+            text += `- タイプ: ${typeId}   名前: ${t.name}\n`
+        })
+        return text
+    },
+
+    addNewTraining: (id, name, typeId, typeName) => {
+        // validation
+        if (!Object.keys(memberInfo.types).includes(typeId)) {
+            return false
+        }
+
+        let member = memberInfo.getMember(id, false)
+
+        // new member
+        if (!member) {
+            member = {
+                "id": id,
+                "name:": name,
+                "trainings": [
+                ]
+            }
+        }
+
+        let newTraining = {
+            "type": typeId,
+            "start_date": memberInfo.getToday().format('YYYY-MM-DD'),
+            "result": [
+            ]
+        }
+        if (typeId == "free") {
+            newTraining["name"] = typeName
+        }
+        member.trainings.push(newTraining)
+
+        //overwrite
+        let exists = false
+        memberInfo.database.members.forEach((d, i) => {
+            if (d.id == member.id) {
+                memberInfo.database.members[i] = member;
+                exists = true
+            }
+        })
+        if (!exists) {
+            memberInfo.database.members.push(member)
+        }
+
         // file write
         fs.writeFileSync(dataFile, JSON.stringify(memberInfo.database));
         return true;
