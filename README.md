@@ -7,7 +7,8 @@
 
 
 ## できること
-- 30日チャレンジ（normal / beginner）の「今日の回数」の確認と「今日やった回数」の登録
+- トレーニングの開始登録と「今日やった回数」の登録
+  - 30日チャレンジ（normal / beginner）「今日の回数」の確認
 - メンションした際、言葉に反応して返事
 - 時々勝手に喋ります (1% の割合)
 
@@ -30,15 +31,19 @@ forever start MuscleFriend.js
 ## 構成
 ```
 MuscleFriend.js ... ボット本体
-memberInfo.js ... スクワット30日チャンレンジ登録・確認用モジュール
-randomConversation.js ... 言葉に反応して/もしくは時々おしゃべりさせる用モジュール
+modules/ ... モジュール
+├ gachaReply.js ... ガチャ言葉（低確率で勝手にしゃべる言葉）の登録・確認用モジュール
+├ memberInfo.js ... スクワット30日チャンレンジ登録・確認用モジュール
+└ randomConversation.js ... 言葉に反応して/も
+data/ ... 保存データ
+├ conversation.json ... 登録済みの反応する言葉一覧
+├ gachaReply.json ... ガチャ言葉一覧
+└ result.json ... 30日チャレンジ結果一覧しくは時々おしゃべりさせる用モジュール
+test/ ... UT ファイル
 changelog.md ... 変更履歴
 README.md ... このファイル
 sample.env ... 環境変数サンプルファイル
-data/ ... 保存データ
-├ conversation.json ... 登録済みの反応する言葉一覧
-└ result.json ... 30日チャレンジ結果一覧
-test/ ... UT ファイル
+test.js ... ネガポジ判定詳細確認用プログラム (CLI)
 ```
 
 
