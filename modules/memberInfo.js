@@ -69,7 +69,7 @@ let memberInfo = {
                 if (i % 3 == 2 && i != (t.result.length - 1)) text += `\n`
                 if (r.total) total += (r.total * 1)
             });
-            text += `\n合計 ${total} 回やりました！\n`
+            text += `\n合計 ${total} 回やりました！\n--------------------------------\n`
         });
         return text;
     },
@@ -92,10 +92,10 @@ let memberInfo = {
         }
     },
 
-    addResult: (id, msg_content) => {
+    addResult: (id, msgContent) => {
         let member = memberInfo.getMember(id, false)
         let currentTraining = member.trainings.slice(-1)[0]
-        let num = msg_content.replace(/[^0-9]/g, '');
+        let num = msgContent.replace(/[^0-9]/g, '');
         let exists = false;
 
         let today = memberInfo.getToday()
@@ -105,6 +105,7 @@ let memberInfo = {
             let tmpDate = moment(r.date)
             if (today.diff(tmpDate, 'days') == 0) {
                 currentTraining.result[i].total = num;
+                currentTraining.result[i].memo += (' / ' + msgContent)
                 exists = true;
             }
         })
@@ -112,7 +113,8 @@ let memberInfo = {
             currentTraining.result.push({
                 "date": today.format('YYYY-MM-DD'),
                 "status": "done",
-                "total": num
+                "total": num,
+                "memo": msgContent
             })
         }
         currentTraining.result.sort((a, b) => {
@@ -154,7 +156,7 @@ let memberInfo = {
         if (!member) {
             member = {
                 "id": id,
-                "name:": name,
+                "name": name,
                 "trainings": [
                 ]
             }

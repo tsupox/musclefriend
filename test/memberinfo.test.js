@@ -18,23 +18,23 @@ const setDatabase = () => {
             {
 
                 "id": "1",
-                "name:": "test2",
+                "name": "test2",
                 "trainings": [
                     {
                         "type": "squat_30_easy",
                         "start_date": "2021-02-14",
                         "result": [
                             { "date": "2021-02-14", "status": "done", "total": 20 },
-                            { "date": "2021-02-15", "status": "done", "total": 30 },
-                            { "date": "2021-02-20", "status": "done", "total": "40" },
-                            { "date": "2021-02-21", "status": "done", "total": "50" },
+                            { "date": "2021-02-15", "status": "done", "total": 30, "memo": "30 done" },
+                            { "date": "2021-02-20", "status": "done", "total": "40", "memo": "40回おわったー" },
+                            { "date": "2021-02-21", "status": "done", "total": "50", "memo": "50 done!" },
                         ]
                     }
                 ]
             },
             {
                 "id": "2",
-                "name:": "test",
+                "name": "test",
                 "trainings": [
                     {
                         "type": "squat_30_easy",
@@ -107,10 +107,12 @@ describe('memberInfo.js', () => {
 2021-02-14: 20回　2021-02-15: 30回　2021-02-20: 40回　
 2021-02-21: 50回　
 合計 140 回やりました！
+--------------------------------
 タイプ: なわとび
 開始日: 2021-03-12
 2021-03-12: 8回　2021-03-15: 回　
 合計 8 回やりました！
+--------------------------------
 `
             )
         });
@@ -155,7 +157,7 @@ describe('memberInfo.js', () => {
             expect(result).to.be.true
             // assert variable
             expect(memberInfo.database.members[0].trainings.slice(-1)[0].result).to.have.lengthOf(5)
-            expect(memberInfo.database.members[0].trainings.slice(-1)[0].result[2]).to.deep.equal({ date: '2021-02-19', status: 'done', total: '90' })
+            expect(memberInfo.database.members[0].trainings.slice(-1)[0].result[2]).to.deep.equal({ date: '2021-02-19', status: 'done', total: '90', memo: '90回終わりました' })
             // assert file data
             let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
             expect(resultFile).to.deep.equals(memberInfo.database)
@@ -170,7 +172,7 @@ describe('memberInfo.js', () => {
             expect(result).to.be.true
             // assert variable
             expect(memberInfo.database.members[0].trainings.slice(-1)[0].result).to.have.lengthOf(4)
-            expect(memberInfo.database.members[0].trainings.slice(-1)[0].result[1]).to.deep.equal({ date: '2021-02-15', status: 'done', total: '90' })
+            expect(memberInfo.database.members[0].trainings.slice(-1)[0].result[1]).to.deep.equal({ date: '2021-02-15', status: 'done', total: '90', memo: '30 done / 90回終わりました' })
             // assert file data
             let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
             expect(resultFile).to.deep.equals(memberInfo.database)
@@ -204,7 +206,7 @@ describe('memberInfo.js', () => {
             expect(memberInfo.database.members.slice(-1)[0]).to.deep.equal(
                 {
                     "id": "3",
-                    "name:": "new_member",
+                    "name": "new_member",
                     "trainings": [
                         {
                             "type": "squat_30_hard",
