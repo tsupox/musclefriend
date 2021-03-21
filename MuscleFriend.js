@@ -273,7 +273,6 @@ bot.registerCommand("gachadelete", (msg, args) => {
 // トレーニング開始登録用コマンド
 // **************
 bot.registerCommand("trainingadd", (msg, args) => {
-    //id, name, typeId, typeName) => {
     if (args.length >= 1) {
         if (args.length == 1) {
             args.push('トレーニング')
@@ -303,6 +302,29 @@ bot.registerCommand("trainingadd", (msg, args) => {
     ],
 });
 
+// **************
+// トレーニング毎日チェックのオンオフ
+// **************
+bot.registerCommand("trainingchecking", (msg, args) => {
+    if (args.length >= 1) {
+        let result = memberInfo.setRegularCheckOnOff(msg.author.id, (args[0] == 'on'))
+        msg.addReaction('⭕');
+    } else {
+        //引数なし
+        msg.addReaction('✖')
+        return `<@!${msg.author.id}> ` + "`使い方: [$trainingchecking on|off]"
+    }
+}, {
+    argsRequired: true,
+    description: "毎日チェックするトレーニング状況のオンオフを設定します。",
+    fullDescription: "うざいときにオフにしてください。",
+    usage: "on|off",
+    reactionButtonTimeout: 600000,
+    reactionButtons: [
+        deleteCommandResult
+    ],
+});
+
 
 
 // BOT からメッセージ送信
@@ -322,10 +344,10 @@ let checkDoneOrNot = (randomWords) => {
     let todaysResults = memberInfo.getTodaysResults()
     util.sleep(3000).then(() => {
         todaysResults.forEach(async (tr) => {
-            if (tr.result == 'not yet') {
+            if (tr.regularCheck != false && tr.result == 'not yet') {
                 bot.getDMChannel(tr.id).then((privateChannel) => {
                     bot.createMessage(privateChannel.id,
-                        `${tr.name}さん、まだ今日は ${tr.typeName} やってないみたいだけど、やらないの？\n今日はやらない日なら「今日はお休み」って教えてね。詳細結果は「結果」と聞いてね`
+                        `${tr.name}さん、まだ今日は ${tr.typeName} やってないみたいだけど、やらないの？\n今日はやらない日なら「今日はお休み」って教えてね。詳細結果は「結果」と聞いてね。\nもしこのチェックが不要であれば \`$trainingchecking off\` でオフにしてください（この DM 上で大丈夫）`
                     )
                 }, () => {
                     console.log(`DM Channel 取得失敗 [id: ${tr.id}]`)

@@ -37,6 +37,7 @@ const setDatabase = () => {
             {
                 "id": "2",
                 "name": "test",
+                "regularCheck": false,
                 "trainings": [
                     {
                         "type": "squat_30_easy",
@@ -262,13 +263,15 @@ describe('memberInfo.js', () => {
                     id: '1',
                     name: 'test2',
                     result: 'not yet',
-                    typeName: 'スクワット30日チャレンジ (normal)'
+                    typeName: 'スクワット30日チャレンジ (normal)',
+                    regularCheck: true  //要素がない場合は true で返却
                 },
                 {
                     id: '2',
                     name: 'test',
                     result: 'done',
-                    typeName: 'なわとび'
+                    typeName: 'なわとび',
+                    regularCheck: false
                 }]
             );
         });
@@ -282,13 +285,15 @@ describe('memberInfo.js', () => {
                     id: '1',
                     name: 'test2',
                     result: 'off',
-                    typeName: 'スクワット30日チャレンジ (normal)'
+                    typeName: 'スクワット30日チャレンジ (normal)',
+                    regularCheck: true
                 },
                 {
                     id: '2',
                     name: 'test',
                     result: 'done',
-                    typeName: 'なわとび'
+                    typeName: 'なわとび',
+                    regularCheck: false
                 }]
             );
         });
@@ -308,6 +313,30 @@ describe('memberInfo.js', () => {
             expect(resultFile).to.deep.equals(memberInfo.database)
 
             mockDate.reset()
+        });
+    })
+    describe('setRegularCheckOnOff()', () => {
+        it('今後の定期チェックは不要です', () => {
+            setDatabase()
+            let result = memberInfo.setRegularCheckOnOff('1', false)  //id: 1
+            // assert result
+            expect(result).to.be.true
+            // assert variable
+            expect(memberInfo.database.members[0].regularCheck).to.be.false
+            // assert file data
+            let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
+            expect(resultFile).to.deep.equals(memberInfo.database)
+        });
+        it('今後の定期チェックをお願いします', () => {
+            setDatabase()
+            let result = memberInfo.setRegularCheckOnOff('1', true)  //id: 1
+            // assert result
+            expect(result).to.be.true
+            // assert variable
+            expect(memberInfo.database.members[0].regularCheck).to.be.true
+            // assert file data
+            let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
+            expect(resultFile).to.deep.equals(memberInfo.database)
         });
     })
 });

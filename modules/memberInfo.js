@@ -208,8 +208,10 @@ let memberInfo = {
             let currentTraining = d.trainings.slice(-1)[0]
             let lastResult = currentTraining.result.slice(-1)[0]
 
-            let m = { id: d.id, name: d.name, result: "not yet", typeName: currentTraining.name }
-            if (lastResult.date == today.format('YYYY-MM-DD')) {
+            let m = { id: d.id, name: d.name, result: "not yet", typeName: currentTraining.name, regularCheck: d.regularCheck }
+            if (typeof m.regularCheck == 'undefined') m.regularCheck = true
+
+            if (lastResult && lastResult.date == today.format('YYYY-MM-DD')) {
                 if (lastResult.status == 'done') {
                     m.result = 'done'
                 } else if (lastResult.status == 'off') {
@@ -223,6 +225,21 @@ let memberInfo = {
 
     setTodayOff: (id, msgContent) => {
         return memberInfo.addResult(id, msgContent, 'off')
+    },
+
+    setRegularCheckOnOff: (id, onOff) => {
+        let member = memberInfo.getMember(id, false)
+        member.regularCheck = (onOff === true)
+
+        //overwrite
+        memberInfo.database.members.forEach((d, i) => {
+            if (d.id == member.id) {
+                memberInfo.database.members[i] = member;
+            }
+        })
+        // file write
+        fs.writeFileSync(dataFile, JSON.stringify(memberInfo.database));
+        return true;
     },
 
     //TODO delete result
