@@ -366,16 +366,6 @@ bot.on("ready", () => {
     randomReply.init();
     gachaReply.init();
     console.log("Ready...");
-
-    // トレーニング状況確認＆はっぱかけ
-    let checkTime = process.env.CHECK_TRAINING_TIME;
-    if (checkTime && /^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(checkTime)) {
-        let ct = checkTime.split(':')
-        cron.schedule(`${ct[2]} ${ct[1]} ${ct[0]} * * *`, () => {
-            let randomWords = ['そろそろチェックの時間かなー', 'あ、時間だ', 'さーてそろそろ確認しまーす', 'ちぇっくちぇっく', '確認するよー', '今日も順調かな？', '今日はみんなやってるかなぁ', 'さて…']
-            checkDoneOrNot(randomWords)
-        })
-    }
 });
 
 /********************
@@ -437,7 +427,7 @@ bot.on("messageCreate", async msg => {
 
                     //回数登録
                     memberInfo.addResult(msg.author.id, content)
-                    sendMessage(msg.channel.id, memberInfo.getMemberInfo(msg.author.id))
+                    sendMessage(msg.channel.id, memberInfo.getMemberInfo(msg.author.id, true))
                 }
             }
 
@@ -459,6 +449,18 @@ bot.on("messageCreate", async msg => {
         }
     }
 });
+
+
+
+// トレーニング状況確認＆はっぱかけ
+let checkTime = process.env.CHECK_TRAINING_TIME;
+if (checkTime && /^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(checkTime)) {
+    let ct = checkTime.split(':')
+    cron.schedule(`${ct[2]} ${ct[1]} ${ct[0]} * * *`, () => {
+        let randomWords = ['そろそろチェックの時間かなー', 'あ、時間だ', 'さーてそろそろ確認しまーす', 'ちぇっくちぇっく', '確認するよー', '今日も順調かな？', '今日はみんなやってるかなぁ', 'さて…']
+        checkDoneOrNot(randomWords)
+    })
+}
 
 // バックアップ
 cron.schedule('0 0 0,12 * * *', memberInfo.backupJson);

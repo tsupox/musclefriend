@@ -102,9 +102,9 @@ describe('memberInfo.js', () => {
         });
     });
     describe('getMemberInfo()', () => {
-        it('結果取得', () => {
+        it('全結果取得', () => {
             setDatabase()
-            let result = memberInfo.getMemberInfo('2')  //id: 2 
+            let result = memberInfo.getMemberInfo('2', false)  //id: 2 
             expect(result).to.equal(
                 `タイプ: スクワット30日チャレンジ (beginner)
 開始日: 2021-02-14

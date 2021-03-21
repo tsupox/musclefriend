@@ -57,11 +57,11 @@ let memberInfo = {
         return member;
     },
 
-    getMemberInfo: (id, current = false) => {
+    getMemberInfo: (id, currentOnly = true) => {
         let member = memberInfo.getMember(id)
         let text = '';
 
-        let outputTraining = current ? member.trainings.slice(-1) : member.trainings
+        let outputTraining = currentOnly ? member.trainings.slice(-1) : member.trainings
         outputTraining.forEach((t) => {
             text += `タイプ: ${t.type_detail ? t.type_detail.name : t.name}\n`;
             text += `開始日: ${t.start_date}\n`;
