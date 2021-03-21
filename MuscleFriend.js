@@ -388,8 +388,6 @@ bot.on("messageCreate", async msg => {
         if (msg.content.substring(0, 1) !== '$') {
             // コマンド以外
 
-            console.log(`${moment().format()} ${msg.channel.id} - ${msg.author.id} ${msg.author.username} - ${msg.content}`)
-
             let mention = msg.mentions.length > 0 && msg.mentions[0].id === bot_id;
             let privateMsg = msg.channel.hasOwnProperty('recipient');
 
@@ -401,6 +399,8 @@ bot.on("messageCreate", async msg => {
 
             //DM かメンションのみ
             if (mention || privateMsg) {
+                console.log(`${moment().format()} ${msg.channel.id} - ${msg.author.id} ${msg.author.username} - ${msg.content}`)
+
                 //結果
                 if (content.match(/(?:結果)/g)) {
                     sendMessage(msg.channel.id, memberInfo.getMemberInfo(msg.author.id, mention == true))   // メンションのときは今の結果のみ
