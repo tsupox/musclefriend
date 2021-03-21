@@ -322,13 +322,15 @@ let checkDoneOrNot = (randomWords) => {
     let todaysResults = memberInfo.getTodaysResults()
     util.sleep(3000).then(() => {
         todaysResults.forEach(async (tr) => {
-            bot.getDMChannel(tr.id).then((privateChannel) => {
-                bot.createMessage(privateChannel.id,
-                    `${tr.name}さん、まだ今日は ${tr.typeName} やってないみたいだけど、やらないの？\n今日はやらない日なら「今日はお休み」って教えてね。詳細結果は「結果」と聞いてね`
-                )
-            }, () => {
-                console.log(`DM Channel 取得失敗 [id: ${tr.id}]`)
-            })
+            if (tr.result == 'not yet') {
+                bot.getDMChannel(tr.id).then((privateChannel) => {
+                    bot.createMessage(privateChannel.id,
+                        `${tr.name}さん、まだ今日は ${tr.typeName} やってないみたいだけど、やらないの？\n今日はやらない日なら「今日はお休み」って教えてね。詳細結果は「結果」と聞いてね`
+                    )
+                }, () => {
+                    console.log(`DM Channel 取得失敗 [id: ${tr.id}]`)
+                })
+            }
         })
     })
 }
@@ -376,7 +378,7 @@ bot.on("messageCreate", async msg => {
             if (mention || privateMsg) {
                 //結果
                 if (content.match(/(?:結果)/g)) {
-                    sendMessage(msg.channel.id, memberInfo.getMemberInfo(msg.author.id))
+                    sendMessage(msg.channel.id, memberInfo.getMemberInfo(msg.author.id, mention == true))   // メンションのときは今の結果のみ
                 }
 
                 //今日何回

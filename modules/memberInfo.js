@@ -57,10 +57,12 @@ let memberInfo = {
         return member;
     },
 
-    getMemberInfo: (id) => {
+    getMemberInfo: (id, current = false) => {
         let member = memberInfo.getMember(id)
         let text = '';
-        member.trainings.forEach((t) => {
+
+        let outputTraining = current ? member.trainings.slice(-1) : member.trainings
+        outputTraining.forEach((t) => {
             text += `タイプ: ${t.type_detail ? t.type_detail.name : t.name}\n`;
             text += `開始日: ${t.start_date}\n`;
 
@@ -210,7 +212,7 @@ let memberInfo = {
             if (lastResult.date == today.format('YYYY-MM-DD')) {
                 if (lastResult.status == 'done') {
                     m.result = 'done'
-                } else if (lastResult == 'off') {
+                } else if (lastResult.status == 'off') {
                     m.result = 'off'
                 }
             }

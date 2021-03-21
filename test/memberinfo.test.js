@@ -119,6 +119,18 @@ describe('memberInfo.js', () => {
 `
             )
         });
+        it('今のトレーニングのみの結果取得', () => {
+            setDatabase()
+            let result = memberInfo.getMemberInfo('2', true)  //id: 2 
+            expect(result).to.equal(
+                `タイプ: なわとび
+開始日: 2021-02-22
+2021-02-22: 8回　2021-02-23: 回　
+合計 8 回やりました！
+--------------------------------
+`
+            )
+        });
     });
     describe('howMany()', () => {
         it('今日何回？', () => {
@@ -250,6 +262,26 @@ describe('memberInfo.js', () => {
                     id: '1',
                     name: 'test2',
                     result: 'not yet',
+                    typeName: 'スクワット30日チャレンジ (normal)'
+                },
+                {
+                    id: '2',
+                    name: 'test',
+                    result: 'done',
+                    typeName: 'なわとび'
+                }]
+            );
+        });
+        it('off の確認', () => {
+            setDatabase()
+            mockDate.set('2021-02-23')
+            memberInfo.setTodayOff('1', "今日はお休み")  //id: 1
+            let result = memberInfo.getTodaysResults()
+            expect(result).to.deep.equal([
+                {
+                    id: '1',
+                    name: 'test2',
+                    result: 'off',
                     typeName: 'スクワット30日チャレンジ (normal)'
                 },
                 {
