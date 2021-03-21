@@ -22,10 +22,12 @@ const setDatabase = () => {
                 "trainings": [
                     {
                         "type": "squat_30_easy",
+                        "name": "スクワット30日チャレンジ (normal)",
                         "start_date": "2021-02-14",
                         "result": [
                             { "date": "2021-02-14", "status": "done", "total": 20 },
                             { "date": "2021-02-15", "status": "done", "total": 30, "memo": "30 done" },
+                            { "date": "2021-02-16", "status": "off", "total": null, "memo": "今日はお休み" },
                             { "date": "2021-02-20", "status": "done", "total": "40", "memo": "40回おわったー" },
                             { "date": "2021-02-21", "status": "done", "total": "50", "memo": "50 done!" },
                         ]
@@ -38,6 +40,7 @@ const setDatabase = () => {
                 "trainings": [
                     {
                         "type": "squat_30_easy",
+                        "name": "スクワット30日チャレンジ (normal)",
                         "start_date": "2021-02-14",
                         "result": [
                             { "date": "2021-02-14", "status": "done", "total": 20 },
@@ -49,10 +52,10 @@ const setDatabase = () => {
                     {
                         "type": "free",
                         "name": "なわとび",
-                        "start_date": "2021-03-12",
+                        "start_date": "2021-02-22",
                         "result": [
-                            { "date": "2021-03-12", "status": "done", "total": "8" },
-                            { "date": "2021-03-15", "status": "done", "total": "" },
+                            { "date": "2021-02-22", "status": "done", "total": "8" },
+                            { "date": "2021-02-23", "status": "done", "total": "" },
                         ]
                     }
                 ]
@@ -109,8 +112,8 @@ describe('memberInfo.js', () => {
 合計 140 回やりました！
 --------------------------------
 タイプ: なわとび
-開始日: 2021-03-12
-2021-03-12: 8回　2021-03-15: 回　
+開始日: 2021-02-22
+2021-02-22: 8回　2021-02-23: 回　
 合計 8 回やりました！
 --------------------------------
 `
@@ -156,8 +159,8 @@ describe('memberInfo.js', () => {
             // assert result
             expect(result).to.be.true
             // assert variable
-            expect(memberInfo.database.members[0].trainings.slice(-1)[0].result).to.have.lengthOf(5)
-            expect(memberInfo.database.members[0].trainings.slice(-1)[0].result[2]).to.deep.equal({ date: '2021-02-19', status: 'done', total: '90', memo: '90回終わりました' })
+            expect(memberInfo.database.members[0].trainings.slice(-1)[0].result).to.have.lengthOf(6)
+            expect(memberInfo.database.members[0].trainings.slice(-1)[0].result[3]).to.deep.equal({ date: '2021-02-19', status: 'done', total: '90', memo: '90回終わりました' })
             // assert file data
             let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
             expect(resultFile).to.deep.equals(memberInfo.database)
@@ -171,7 +174,7 @@ describe('memberInfo.js', () => {
             // assert result
             expect(result).to.be.true
             // assert variable
-            expect(memberInfo.database.members[0].trainings.slice(-1)[0].result).to.have.lengthOf(4)
+            expect(memberInfo.database.members[0].trainings.slice(-1)[0].result).to.have.lengthOf(5)
             expect(memberInfo.database.members[0].trainings.slice(-1)[0].result[1]).to.deep.equal({ date: '2021-02-15', status: 'done', total: '90', memo: '30 done / 90回終わりました' })
             // assert file data
             let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
@@ -209,6 +212,7 @@ describe('memberInfo.js', () => {
                     "name": "new_member",
                     "trainings": [
                         {
+                            "name": "スクワット30日チャレンジ (normal)",
                             "type": "squat_30_hard",
                             "start_date": "2021-03-12",
                             "result": []
@@ -224,7 +228,6 @@ describe('memberInfo.js', () => {
             let result = memberInfo.addNewTraining('2', 'test2', 'free', '新しいトレーニング')
             expect(result).to.be.true
             expect(memberInfo.database.members).to.have.lengthOf(2)
-            console.log(memberInfo.database.members[1])
             expect(memberInfo.database.members[1].trainings).to.have.lengthOf(3)
             expect(memberInfo.database.members[1].trainings.slice(-1)[0]).to.deep.equal(
                 {
@@ -236,6 +239,52 @@ describe('memberInfo.js', () => {
             )
             mockDate.reset()
         });
-
     });
+    describe('getTodaysResults()', () => {
+        it('今日の全員の結果取得', () => {
+            setDatabase()
+            mockDate.set('2021-02-23')
+            let result = memberInfo.getTodaysResults()
+            expect(result).to.deep.equal([
+                {
+                    id: '1',
+                    name: 'test2',
+                    result: 'not yet',
+                    typeName: 'スクワット30日チャレンジ (normal)',
+                    last3days: [
+                        { "date": "2021-02-16", "status": "off", "total": null, "memo": "今日はお休み" },
+                        { "date": "2021-02-20", "status": "done", "total": "40", "memo": "40回おわったー" },
+                        { "date": "2021-02-21", "status": "done", "total": "50", "memo": "50 done!" },
+                    ]
+                },
+                {
+                    id: '2',
+                    name: 'test',
+                    result: 'done',
+                    typeName: 'なわとび',
+                    last3days: [
+                        { "date": "2021-02-22", "status": "done", "total": "8" },
+                        { "date": "2021-02-23", "status": "done", "total": "" },
+                    ]
+                }]
+            );
+        });
+    });
+    describe('setTodayOff()', () => {
+        it('今日はやらない宣言', () => {
+            setDatabase()
+            mockDate.set('2021-02-19')
+            let result = memberInfo.setTodayOff('1', "今日はお休み")  //id: 1
+            // assert result
+            expect(result).to.be.true
+            // assert variable
+            expect(memberInfo.database.members[0].trainings.slice(-1)[0].result).to.have.lengthOf(6)
+            expect(memberInfo.database.members[0].trainings.slice(-1)[0].result[3]).to.deep.equal({ date: '2021-02-19', status: 'off', total: '', memo: '今日はお休み' })
+            // assert file data
+            let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
+            expect(resultFile).to.deep.equals(memberInfo.database)
+
+            mockDate.reset()
+        });
+    })
 });

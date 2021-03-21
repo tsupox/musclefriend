@@ -16,6 +16,7 @@ const CakeHash = require("cake-hash");
 const cron = require('node-cron');
 
 // modules
+const util = require('./modules/util.js');
 const randomReply = require('./modules/randomReply.js');
 const memberInfo = require('./modules/memberInfo.js');
 const gachaReply = require('./modules/gachaReply.js');
@@ -30,10 +31,8 @@ const bot = new Eris.CommandClient(token, {}, {
 /** BOT Client ID */
 const bot_id = process.env.BOT_USER_ID;
 
-/** rooms */
-const roomIds = process.env.ROOMS.split(' ');
 /** admins (not use) */
-const admins = process.env.ADMINS.split(' ');
+const ADMINS = process.env.ADMINS.split(' ');
 
 /** メンションユーザー取得 */
 const getMentionedUser = (msg_content) => {
@@ -306,6 +305,33 @@ bot.registerCommand("trainingadd", (msg, args) => {
 
 
 
+// BOT からメッセージ送信
+const sendMessage = (channelId, message, sleepTime) => {
+    if (sleepTime == null) sleepTime = (Math.floor(Math.random() * 7) + 3.5) * 100; //ms
+
+    bot.sendChannelTyping(channelId).then(() => {
+        return util.sleep(sleepTime)
+    }).then(() => {
+        bot.createMessage(channelId, message)
+    })
+}
+
+// トレーニングチェック
+let checkDoneOrNot = (randomWords) => {
+    sendMessage(process.env.TWEET_ROOM, randomReply.getRandom(randomWords))
+    let todaysResults = memberInfo.getTodaysResults()
+    util.sleep(3000).then(() => {
+        todaysResults.forEach(async (tr) => {
+            bot.getDMChannel(tr.id).then((privateChannel) => {
+                bot.createMessage(privateChannel.id,
+                    `${tr.name}さん、まだ今日は ${tr.typeName} やってないみたいだけど、やらないの？\n今日はやらない日なら「今日はお休み」って教えてね。詳細結果は「結果」と聞いてね`
+                )
+            }, () => {
+                console.log(`DM Channel 取得失敗 [id: ${tr.id}]`)
+            })
+        })
+    })
+}
 
 /********************
  *  ready
@@ -315,37 +341,66 @@ bot.on("ready", () => {
     randomReply.init();
     gachaReply.init();
     console.log("Ready...");
+
+    // トレーニング状況確認＆はっぱかけ
+    let checkTime = process.env.CHECK_TRAINING_TIME;
+    if (checkTime && /^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(checkTime)) {
+        let ct = checkTime.split(':')
+        cron.schedule(`${ct[2]} ${ct[1]} ${ct[0]} * * *`, () => {
+            let randomWords = ['そろそろチェックの時間かなー', 'あ、時間だ', 'さーてそろそろ確認しまーす', 'ちぇっくちぇっく', '確認するよー', '今日も順調かな？', '今日はみんなやってるかなぁ', 'さて…']
+            checkDoneOrNot(randomWords)
+        })
+    }
 });
 
 /********************
- *  メッセージ
+ * 誰かの発言時
  ********************/
 bot.on("messageCreate", async msg => {
     if (!msg.author.bot) {
         // BOT 以外
 
-        if (roomIds.includes(msg.channel.id)) {
-            //特定チャンネルのみ
+        if (msg.content.substring(0, 1) !== '$') {
+            // コマンド以外
 
-            //botへのメンションに反応
-            if (msg.mentions.length > 0 && msg.mentions[0].id === bot_id) {
+            let mention = msg.mentions.length > 0 && msg.mentions[0].id === bot_id;
+            let privateMsg = msg.channel.hasOwnProperty('recipient');
 
-                let content = msg.content.replace(`<@!${msg.mentions[0].id}>`, '').replace(`<@${msg.mentions[0].id}>`, '').trim()
+            let content = msg.content;
+            if (mention) {
+                //botへのメンションに反応
+                content = msg.content.replace(`<@!${msg.mentions[0].id}>`, '').replace(`<@${msg.mentions[0].id}>`, '').trim()
+            }
 
+            //DM かメンションのみ
+            if (mention || privateMsg) {
                 //結果
                 if (content.match(/(?:結果)/g)) {
-                    bot.createMessage(msg.channel.id, memberInfo.getMemberInfo(msg.author.id))
+                    sendMessage(msg.channel.id, memberInfo.getMemberInfo(msg.author.id))
                 }
+
                 //今日何回
                 else if (content.match(/(?:何回)/g)) {
                     let adjustment = content.match(/明日/) ? 1 : 0;
-                    bot.createMessage(msg.channel.id, memberInfo.howMany(msg.author.id, adjustment))
-                } else {
-                    let reply = await randomReply.getReply(content)
-                    if (reply.emoji) {
-                        msg.addReaction(reply.emoji);
-                    }
-                    bot.createMessage(msg.channel.id, reply.word);
+                    sendMessage(msg.channel.id, memberInfo.howMany(msg.author.id, adjustment))
+                }
+
+                //今日はお休み
+                else if (content.match(/(?:今日|きょう)はお?(?:休み|やすみ)/g)) {
+                    memberInfo.setTodayOff(msg.author.id, content)
+                    sendMessage(msg.channel.id, randomReply.getRandom(['わかった', 'しっかりやすんでね～', '了解～', 'おっけー', 'OK!', ':ok_hand:', ':man_gesturing_ok: ']))
+                }
+
+                //ランダム返信
+                else {
+                    randomReply.getReply(content).then((reply) => {
+                        if (reply.emoji) {
+                            util.sleep(200).then(() => {
+                                msg.addReaction(reply.emoji);
+                            })
+                        }
+                        sendMessage(msg.channel.id, reply.word)
+                    })
                 }
 
                 //おわったー
@@ -355,21 +410,26 @@ bot.on("messageCreate", async msg => {
 
                     //回数登録
                     memberInfo.addResult(msg.author.id, content)
-                    bot.createMessage(msg.channel.id, memberInfo.getMemberInfo(msg.author.id))
+                    sendMessage(msg.channel.id, memberInfo.getMemberInfo(msg.author.id))
                 }
             }
-        }
 
-        if (msg.content.match(/^草$/)) {
-            if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "草");
-        } else if (msg.content.match(/^えらい！/)) {
-            if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "えらい！");
-        } else if (msg.content.match(/(?:ｗ|（笑）|\(笑\))/g)) {
-            if (Math.random() < 0.2) bot.createMessage(msg.channel.id, "ｗｗｗ");
-        } else {
-            if (Math.random() < 0.01) bot.createMessage(msg.channel.id, gachaReply.getReply());
-        }
+            else {
+                // チャンネルのときのみ
 
+                // 勝手に反応
+                if (msg.content.match(/^草$/)) {
+                    if (Math.random() < 0.2) sendMessage(msg.channel.id, "草");
+                } else if (msg.content.match(/^えらい！/)) {
+                    if (Math.random() < 0.2) sendMessage(msg.channel.id, "えらい！");
+                } else if (msg.content.match(/(?:ｗ|（笑）|\(笑\))/g)) {
+                    if (Math.random() < 0.2) sendMessage(msg.channel.id, "ｗｗｗ");
+                } else {
+                    if (Math.random() < 0.01) sendMessage(msg.channel.id, gachaReply.getReply());
+                }
+            }
+
+        }
     }
 });
 

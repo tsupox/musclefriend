@@ -40,6 +40,7 @@ let memberInfo = {
     },
 
     getMember: (id, needTypeDetail = true) => {
+        //TODO ユーザーごとにファイルを変えるか別のデータベースにするか
         let member = CakeHash.extract(memberInfo.database, `members.{n}[id=${id}]`);
         if (member.length) {
             member = member[0];
@@ -65,9 +66,11 @@ let memberInfo = {
 
             let total = 0;
             t.result.forEach((r, i) => {
-                text += `${r.date}: ${r.total}回　`;
-                if (i % 3 == 2 && i != (t.result.length - 1)) text += `\n`
-                if (r.total) total += (r.total * 1)
+                if (r.status == 'done') {
+                    text += `${r.date}: ${r.total}回　`;
+                    if (i % 3 == 2 && i != (t.result.length - 1)) text += `\n`
+                    if (r.total) total += (r.total * 1)
+                }
             });
             text += `\n合計 ${total} 回やりました！\n--------------------------------\n`
         });
@@ -92,7 +95,8 @@ let memberInfo = {
         }
     },
 
-    addResult: (id, msgContent) => {
+    addResult: (id, msgContent, status = 'done') => {
+        //TODO 昨日、今日、「日付」の結果登録
         let member = memberInfo.getMember(id, false)
         let currentTraining = member.trainings.slice(-1)[0]
         let num = msgContent.replace(/[^0-9]/g, '');
@@ -112,7 +116,7 @@ let memberInfo = {
         if (exists == false) {
             currentTraining.result.push({
                 "date": today.format('YYYY-MM-DD'),
-                "status": "done",
+                "status": status,
                 "total": num,
                 "memo": msgContent
             })
@@ -170,6 +174,9 @@ let memberInfo = {
         }
         if (typeId == "free") {
             newTraining["name"] = typeName
+        } else {
+            let typeDetail = CakeHash.get(memberInfo.types, typeId)
+            newTraining["name"] = typeDetail.name
         }
         member.trainings.push(newTraining)
 
@@ -190,6 +197,32 @@ let memberInfo = {
         return true;
     },
 
+    getTodaysResults: () => {
+        let today = memberInfo.getToday()
+        let todaysResult = []
+
+        memberInfo.database.members.forEach((d, i) => {
+
+            let currentTraining = d.trainings.slice(-1)[0]
+            let lastResult = currentTraining.result.slice(-1)[0]
+
+            let m = { id: d.id, name: d.name, result: "not yet", typeName: currentTraining.name, last3days: currentTraining.result.slice(-3) }
+            if (lastResult.date == today.format('YYYY-MM-DD')) {
+                if (lastResult.status == 'done') {
+                    m.result = 'done'
+                } else if (lastResult == 'off') {
+                    m.result = 'off'
+                }
+            }
+            todaysResult.push(m)
+        })
+        return todaysResult
+    },
+
+    setTodayOff: (id, msgContent) => {
+        return memberInfo.addResult(id, msgContent, 'off')
+    },
+
     //TODO delete result
     //TODO list everyone's result
 
@@ -197,6 +230,8 @@ let memberInfo = {
         let now = moment();
         fs.writeFileSync(dataFile + "_" + now.format("YYYYMMDDHHmm"), JSON.stringify(memberInfo.database))
         //TODO: S3 バックアップ
+
+        //TODO: 一週間前のは削除
     },
 }
 
