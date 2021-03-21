@@ -250,22 +250,13 @@ describe('memberInfo.js', () => {
                     id: '1',
                     name: 'test2',
                     result: 'not yet',
-                    typeName: 'スクワット30日チャレンジ (normal)',
-                    last3days: [
-                        { "date": "2021-02-16", "status": "off", "total": null, "memo": "今日はお休み" },
-                        { "date": "2021-02-20", "status": "done", "total": "40", "memo": "40回おわったー" },
-                        { "date": "2021-02-21", "status": "done", "total": "50", "memo": "50 done!" },
-                    ]
+                    typeName: 'スクワット30日チャレンジ (normal)'
                 },
                 {
                     id: '2',
                     name: 'test',
                     result: 'done',
-                    typeName: 'なわとび',
-                    last3days: [
-                        { "date": "2021-02-22", "status": "done", "total": "8" },
-                        { "date": "2021-02-23", "status": "done", "total": "" },
-                    ]
+                    typeName: 'なわとび'
                 }]
             );
         });

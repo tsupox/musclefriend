@@ -206,7 +206,7 @@ let memberInfo = {
             let currentTraining = d.trainings.slice(-1)[0]
             let lastResult = currentTraining.result.slice(-1)[0]
 
-            let m = { id: d.id, name: d.name, result: "not yet", typeName: currentTraining.name, last3days: currentTraining.result.slice(-3) }
+            let m = { id: d.id, name: d.name, result: "not yet", typeName: currentTraining.name }
             if (lastResult.date == today.format('YYYY-MM-DD')) {
                 if (lastResult.status == 'done') {
                     m.result = 'done'
