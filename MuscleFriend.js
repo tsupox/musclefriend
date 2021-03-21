@@ -14,6 +14,7 @@ const Eris = require("eris");
 const fs = require("fs");
 const CakeHash = require("cake-hash");
 const cron = require('node-cron');
+const moment = require("moment");
 
 // modules
 const util = require('./modules/util.js');
@@ -383,6 +384,9 @@ bot.on("ready", () => {
 bot.on("messageCreate", async msg => {
     if (!msg.author.bot) {
         // BOT 以外
+
+        // メッセージ内容ログ出力
+        console.log(`${moment().format()} ${msg.channel.id} - ${msg.author.id} ${msg.author.username} - ${msg.content}`)
 
         if (msg.content.substring(0, 1) !== '$') {
             // コマンド以外
