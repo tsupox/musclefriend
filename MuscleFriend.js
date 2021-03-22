@@ -347,8 +347,9 @@ let checkDoneOrNot = (randomWords) => {
         todaysResults.forEach(async (tr) => {
             if (tr.regularCheck != false && tr.result == 'not yet') {
                 bot.getDMChannel(tr.id).then((privateChannel) => {
+                    console.log(`Send DM - ${tr.id} ${tr.name}`)
                     bot.createMessage(privateChannel.id,
-                        `${tr.name}さん、まだ今日は ${tr.typeName} やってないみたいだけど、やらないの？\n今日はやらない日なら「今日はお休み」って教えてね。詳細結果は「結果」と聞いてね。\nもしこのチェックが不要であれば \`$trainingchecking off\` でオフにしてください（この DM 上で大丈夫）`
+                        `${tr.name}さん、まだ今日は ${tr.typeName} やってないみたいだけど、やらないの？\n今日はやらない日なら「今日はお休み」って教えてね。詳細結果は「結果」と聞いてね。\nもしこの DM を今後受け取りたくない場合は、 \`$trainingchecking off\` をしてね（この DM 上で大丈夫）`
                     )
                 }, () => {
                     console.log(`DM Channel 取得失敗 [id: ${tr.id}]`)
