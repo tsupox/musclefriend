@@ -16,7 +16,7 @@ let gachaReply = {
     },
 
     getReply: () => {
-        return randomReply.getRandom(gachaReply.database);
+        return util.getRandom(gachaReply.database);
     },
 
     addCommand: (args) => {

@@ -1,6 +1,7 @@
 const fs = require("fs");
 const CakeHash = require("cake-hash");
 const moment = require("moment");
+const util = require('./util.js');
 // -- 言語解析
 const kuromojin = require('kuromojin');
 const negaposiAnalyzer = require('negaposi-analyzer-ja');
@@ -32,10 +33,6 @@ let randomReply = {
 
     init: () => {
         randomReply.database = JSON.parse(fs.readFileSync(dataFile, "utf8"));
-    },
-
-    getRandom: (array) => {
-        return array[Math.floor(Math.random() * array.length)];
     },
 
     joinArgs: (args) => {
@@ -100,7 +97,7 @@ let randomReply = {
             randomReply.database.commands.forEach((c) => {
                 if (keyword.match(new RegExp(c.keyword, 'g'))) {
                     let replies = randomReply.database.replies[c.replyId].split(",");
-                    result.word = randomReply.getRandom(replies);
+                    result.word = util.getRandom(replies);
                 }
             });
         }
@@ -123,7 +120,7 @@ let randomReply = {
                     result.emoji = "🙄" // 😐
                 }
             }
-            result.word = randomReply.getRandom(wordList);
+            result.word = util.getRandom(wordList);
         }
         return result;
     },

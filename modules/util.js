@@ -12,5 +12,9 @@ module.exports = {
                 resolve();
             }, time);
         });
-    }
+    },
+
+    getRandom: (array) => {
+        return array[Math.floor(Math.random() * array.length)];
+    },
 }

@@ -326,6 +326,49 @@ bot.registerCommand("trainingchecking", (msg, args) => {
     ],
 });
 
+// **************
+// AmongUs Darts (狂人決定)
+// **************
+bot.registerCommand("darts", (msg, args) => {
+    // 言った人がボイスちゃんねるにいるか
+    if (msg.member.guild.voiceStates.size == 0) {
+        msg.addReaction('✖')
+        return `<@!${msg.author.id}> ` + "ボイスチャンネルに入ってね！"
+    }
+
+    //ボイスチャンネルのメンバー一覧取得
+    let voiceStateId = Array.from(msg.member.guild.voiceStates.keys())[0];
+    let voiceChannelId = msg.member.guild.voiceStates.get(voiceStateId).channelID
+    let voiceChannel = bot.getChannel(voiceChannelId)
+    let voiceMembers = voiceChannel.voiceMembers
+    let voiceMembersArray = Array.from(voiceMembers.keys())
+
+    // Dart
+    let minion = util.getRandom(voiceMembersArray)
+    console.log(`This time minion is: ${minion} ${voiceMembers.get(minion).user.username}`)
+
+    //みんなに DM を送る
+    voiceMembersArray.forEach(async (who) => {
+        let dmMsg = '今回はちがいます！😊'
+        if (who == minion) {
+            dmMsg = `${voiceMembers.get(minion).user.username}さん、狂人 😈 になりました！`
+        }
+        bot.getDMChannel(who).then((privateChannel) => {
+            bot.createMessage(privateChannel.id, dmMsg)
+        }, () => {
+            console.log(`DM Channel 取得失敗 [id: ${who}]`)
+        })
+    })
+
+    bot.createMessage(msg.channel.id, '全員に DM を送りました。内容を確認してね。')
+
+}, {
+    argsRequired: false,
+    description: "AmongUs で狂人に DM します",
+    fullDescription: "コマンドを打った人が入っているボイスチャンネルの一人を狂人とし、 DM を送ります。",
+    usage: "",
+});
+
 
 
 // BOT からメッセージ送信
@@ -341,7 +384,7 @@ const sendMessage = (channelId, message, sleepTime) => {
 
 // トレーニングチェック
 let checkDoneOrNot = (randomWords) => {
-    sendMessage(process.env.TWEET_ROOM, randomReply.getRandom(randomWords))
+    sendMessage(process.env.TWEET_ROOM, util.getRandom(randomWords))
     let todaysResults = memberInfo.getTodaysResults()
     util.sleep(3000).then(() => {
         todaysResults.forEach(async (tr) => {
@@ -406,7 +449,7 @@ bot.on("messageCreate", async msg => {
                 //今日はお休み
                 else if (content.match(/(?:今日|きょう)はお?(?:休み|やすみ)/g)) {
                     memberInfo.setTodayOff(msg.author.id, content)
-                    sendMessage(msg.channel.id, randomReply.getRandom(['わかった', 'しっかりやすんでね～', '了解～', 'おっけー', 'OK!', ':ok_hand:', ':man_gesturing_ok: ']))
+                    sendMessage(msg.channel.id, util.getRandom(['わかった', 'しっかりやすんでね～', '了解～', 'おっけー', 'OK!', ':ok_hand:', ':man_gesturing_ok: ']))
                 }
 
                 //ランダム返信
@@ -424,7 +467,7 @@ bot.on("messageCreate", async msg => {
                 //おわったー
                 if (content.match(/(?:やった|おわった|done|おわり|やりました|終わ)/g) && !content.match(/仕事/g)) {
                     let awesomeReactions = ["✨", "💯", "🎉", "👏"];
-                    msg.addReaction(randomReply.getRandom(awesomeReactions));
+                    msg.addReaction(util.getRandom(awesomeReactions));
 
                     //回数登録
                     memberInfo.addResult(msg.author.id, content)
@@ -442,6 +485,10 @@ bot.on("messageCreate", async msg => {
                     if (Math.random() < 0.2) sendMessage(msg.channel.id, "えらい！");
                 } else if (msg.content.match(/(?:ｗ|（笑）|\(笑\))/g)) {
                     if (Math.random() < 0.2) sendMessage(msg.channel.id, "ｗｗｗ");
+                } else if (msg.content.match(/(?:へぇ|へー)/)) {
+                    if (Math.random() < 0.2) sendMessage(msg.channel.id, "へぇ");
+                } else if (msg.content.match(/は？/)) {
+                    if (Math.random() < 0.2) sendMessage(msg.channel.id, "どしたの？");
                 } else {
                     if (Math.random() < 0.01) sendMessage(msg.channel.id, gachaReply.getReply());
                 }

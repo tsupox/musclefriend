@@ -43,12 +43,6 @@ const setDatabase = () => {
 }
 
 describe('randomReply.js', async () => {
-    describe('getRandom()', () => {
-        it('ランダム取得', () => {
-            let result = randomReply.getRandom(['a', 'b', 'c', 'd', 'e'])
-            expect(result).to.be.oneOf(['a', 'b', 'c', 'd', 'e'])
-        });
-    });
     describe('joinArgs()', () => {
         it('連結　引数が文字列', () => {
             let result = randomReply.joinArgs('aaa')
