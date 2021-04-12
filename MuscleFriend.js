@@ -371,14 +371,55 @@ bot.registerCommand("darts", (msg, args) => {
 
 
 
+// **************
+// ルーレット
+// **************
+bot.registerCommand("roulette", (msg, args) => {
+    if (args.length == 0) {
+        msg.addReaction('✖')
+        return `<@!${msg.author.id}> ` + "`使い方: [$roulette 2つ以上のナニカ スペース区切り]"
+    } if (args.length == 1) {
+        msg.addReaction('✖')
+        return `<@!${msg.author.id}> ` + "`使い方: [$roulette 2つ以上のナニカ スペース区切り]"
+    }
+
+    sendMessage(msg.channel.id, util.getRandom(['お、ルーレットですね', '回しますっ', 'いきますよー', 'はいっ', 'せーのっ', '気になる結果は…？']))
+        .then(() => {
+            return new Promise((resolve, reject) => {
+                util.sleep(0.5)
+                resolve()
+            })
+        })
+        .then(() => {
+            return sendMessage(msg.channel.id, 'ドゥルルルルルルルルルルルルルルルルルル...')
+        })
+        .then(() => {
+            return bot.sendChannelTyping(msg.channel.id).then(() => {
+                let sleepTime = (Math.floor(Math.random() * 35) + 20) * 100; //ms 3.5~5.5s
+                console.log(sleepTime)
+                return util.sleep(sleepTime)
+            })
+        })
+        .then(() => {
+            sendMessage(msg.channel.id, 'ジャンッ　クリック→||             ' + util.getRandom(args) + '          ||')
+        })
+
+}, {
+    argsRequired: false,
+    description: "ルーレットします。",
+    fullDescription: "スペース区切りの引数をもとにルーレット形式で 1 つ選択します。",
+    usage: "",
+});
+
+
 // BOT からメッセージ送信
 const sendMessage = (channelId, message, sleepTime) => {
-    if (sleepTime == null) sleepTime = (Math.floor(Math.random() * 7) + 3.5) * 100; //ms
+    if (sleepTime == null) sleepTime = (Math.floor(Math.random() * 7) + 3.5) * 100; //ms (0.7 ~ 1.5s)
 
-    bot.sendChannelTyping(channelId).then(() => {
+    return bot.sendChannelTyping(channelId).then(() => {
         return util.sleep(sleepTime)
     }).then(() => {
-        bot.createMessage(channelId, message)
+        return bot.createMessage(channelId, message)
     })
 }
 
