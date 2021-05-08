@@ -276,4 +276,15 @@ describe('randomReply.js', async () => {
             expect(randomReply.database.commands).to.have.lengthOf(commandsLength)
         });
     });
+    describe('backupJson()', () => {
+        it('S3 & 同フォルダに json ファイルバックアップ', () => {
+            setDatabase()
+            let result = randomReply.backupJson()
+            // assert result
+            expect(result).to.be.string
+            // assert file data
+            let resultFile = JSON.parse(fs.readFileSync(result, "utf8"));
+            expect(resultFile).to.deep.equals(randomReply.database)
+        })
+    })
 });

@@ -1,9 +1,17 @@
+require('dotenv').config();
 const fs = require("fs");
 const CakeHash = require("cake-hash");
 const moment = require("moment");
-const dataFile = './data/result.json';
+var AWS = require("aws-sdk");
+const fileName = 'result.json';
+const dataFile = './data/' + fileName;
 
 const DAY_START_TIME = 5;
+
+AWS.config.apiVersions = {
+    s3: '2006-03-01',
+};
+
 
 let memberInfo = {
     database: null,
@@ -106,7 +114,7 @@ let memberInfo = {
 
         let today = memberInfo.getToday()
 
-        //checking whether today's result is already reported 
+        //checking whether today's result is already reported
         currentTraining.result.forEach((r, i) => {
             let tmpDate = moment(r.date)
             if (today.diff(tmpDate, 'days') == 0) {
@@ -246,11 +254,26 @@ let memberInfo = {
     //TODO list everyone's result
 
     backupJson: () => {
+        if (process.env.AWS_ACCESS_KEY_ID) {
+            // S3 Backup
+            let s3 = new AWS.S3();
+            let params = {
+                Body: JSON.stringify(memberInfo.database),
+                Bucket: process.env.AWS_S3_BUCKET,
+                Key: fileName,
+            };
+            s3.putObject(params, function (err, data) {
+                if (err) console.log(err, err.stack);
+            }).promise()
+        }
+        // 従来のバックアップ
         let now = moment();
-        fs.writeFileSync(dataFile + "_" + now.format("YYYYMMDDHHmm"), JSON.stringify(memberInfo.database))
-        //TODO: S3 バックアップ
+        let backupFileName = dataFile + "_" + now.format("YYYYMMDDHHmm");
+        fs.writeFileSync(backupFileName, JSON.stringify(memberInfo.database))
 
         //TODO: 一週間前のは削除
+
+        return backupFileName;
     },
 }
 

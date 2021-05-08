@@ -83,7 +83,7 @@ describe('memberInfo.js', () => {
     describe('getMember()', () => {
         it('id 指定　存在するとき', () => {
             setDatabase()
-            let result = memberInfo.getMember('2')  //id: 2 
+            let result = memberInfo.getMember('2')  //id: 2
             expect(result.id).to.equal('2')
             expect(result.trainings[0]).to.have.property('type_detail')
             expect(result.trainings[1]).to.not.have.property('type_detail')
@@ -104,7 +104,7 @@ describe('memberInfo.js', () => {
     describe('getMemberInfo()', () => {
         it('全結果取得', () => {
             setDatabase()
-            let result = memberInfo.getMemberInfo('2', false)  //id: 2 
+            let result = memberInfo.getMemberInfo('2', false)  //id: 2
             expect(result).to.equal(
                 `タイプ: スクワット30日チャレンジ (beginner)
 開始日: 2021-02-14
@@ -122,7 +122,7 @@ describe('memberInfo.js', () => {
         });
         it('今のトレーニングのみの結果取得', () => {
             setDatabase()
-            let result = memberInfo.getMemberInfo('2', true)  //id: 2 
+            let result = memberInfo.getMemberInfo('2', true)  //id: 2
             expect(result).to.equal(
                 `タイプ: なわとび
 開始日: 2021-02-22
@@ -158,7 +158,7 @@ describe('memberInfo.js', () => {
         it('今日何回？ - 対応してない', () => {
             setDatabase()
             mockDate.set('2021-02-27')
-            let result = memberInfo.howMany('2')  //id: 2 
+            let result = memberInfo.howMany('2')  //id: 2
             expect(result).to.equal('このトレーニングは回数自由です。好きなだけがんばろう！')
             mockDate.reset()
         });
@@ -338,5 +338,16 @@ describe('memberInfo.js', () => {
             let resultFile = JSON.parse(fs.readFileSync(dataFile, "utf8"));
             expect(resultFile).to.deep.equals(memberInfo.database)
         });
+    })
+    describe('backupJson()', () => {
+        it('S3 & 同フォルダに json ファイルバックアップ', () => {
+            setDatabase()
+            let result = memberInfo.backupJson()
+            // assert result
+            expect(result).to.be.string
+            // assert file data
+            let resultFile = JSON.parse(fs.readFileSync(result, "utf8"));
+            expect(resultFile).to.deep.equals(memberInfo.database)
+        })
     })
 });

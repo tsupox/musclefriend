@@ -1,8 +1,16 @@
+require('dotenv').config();
 const fs = require("fs");
 const moment = require("moment");
 const randomReply = require('./randomReply.js');
 const util = require('./util.js');
-const dataFile = './data/gachaReply.json';
+var AWS = require("aws-sdk");
+const fileName = 'gachaReply.json';
+const dataFile = './data/' + fileName;
+
+AWS.config.apiVersions = {
+    s3: '2006-03-01',
+};
+
 
 let gachaReply = {
     database: null,
@@ -46,10 +54,27 @@ let gachaReply = {
     },
 
     backupJson: () => {
+        if (process.env.AWS_ACCESS_KEY_ID) {
+            // S3 Backup
+            let s3 = new AWS.S3();
+            let params = {
+                Body: JSON.stringify(gachaReply.database),
+                Bucket: process.env.AWS_S3_BUCKET,
+                Key: fileName,
+            };
+            s3.putObject(params, function (err, data) {
+                if (err) console.log(err, err.stack);
+            }).promise()
+        }
+        // 従来のバックアップ
         let now = moment();
-        fs.writeFileSync(dataFile + "_" + now.format("YYYYMMDDHHmm"), JSON.stringify(gachaReply.database))
-        //TODO: S3 バックアップ
-    },
+        let backupFileName = dataFile + "_" + now.format("YYYYMMDDHHmm");
+        fs.writeFileSync(backupFileName, JSON.stringify(gachaReply.database))
+
+        //TODO: 一週間前のは削除
+
+        return backupFileName;
+    }
 
 }
 

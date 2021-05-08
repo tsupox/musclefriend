@@ -1,12 +1,20 @@
+require('dotenv').config();
 const fs = require("fs");
 const CakeHash = require("cake-hash");
 const moment = require("moment");
 const util = require('./util.js');
+var AWS = require("aws-sdk");
 // -- 言語解析
 const kuromojin = require('kuromojin');
 const negaposiAnalyzer = require('negaposi-analyzer-ja');
 
-const dataFile = './data/conversation.json';
+const fileName = 'conversation.json';
+const dataFile = './data/' + fileName;
+
+AWS.config.apiVersions = {
+    s3: '2006-03-01',
+};
+
 
 let randomReply = {
     database: null,
@@ -204,10 +212,27 @@ let randomReply = {
     },
 
     backupJson: () => {
+        if (process.env.AWS_ACCESS_KEY_ID) {
+            // S3 Backup
+            let s3 = new AWS.S3();
+            let params = {
+                Body: JSON.stringify(randomReply.database),
+                Bucket: process.env.AWS_S3_BUCKET,
+                Key: fileName,
+            };
+            s3.putObject(params, function (err, data) {
+                if (err) console.log(err, err.stack);
+            }).promise()
+        }
+        // 従来のバックアップ
         let now = moment();
-        fs.writeFileSync(dataFile + "_" + now.format("YYYYMMDDHHmm"), JSON.stringify(randomReply.database))
-        //TODO: S3 バックアップ
-    },
+        let backupFileName = dataFile + "_" + now.format("YYYYMMDDHHmm");
+        fs.writeFileSync(backupFileName, JSON.stringify(randomReply.database))
+
+        //TODO: 一週間前のは削除
+
+        return backupFileName;
+    }
 
 }
 
