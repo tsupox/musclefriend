@@ -9,9 +9,12 @@
 ## できること
 - トレーニングの開始登録と「今日やった回数」の登録
   - 30日チャレンジ（normal / beginner）「今日の回数」の確認
-- メンションした際、言葉に反応して返事
+  - 時間になったときにその日にトレーニングの記録がない場合、 DM で確認します
+  - 記録用 json は S3 バックアップ
+- メンション / DM した際、言葉に反応して返事
 - 時々勝手に喋ります (1% の割合)
-
+- 与えられた候補内でルーレットをします
+- マインスイーパーを作成します
 
 ## How to install
 ```
@@ -34,7 +37,8 @@ MuscleFriend.js ... ボット本体
 modules/ ... モジュール
 ├ gachaReply.js ... ガチャ言葉（低確率で勝手にしゃべる言葉）の登録・確認用モジュール
 ├ memberInfo.js ... スクワット30日チャンレンジ登録・確認用モジュール
-└ randomConversation.js ... 言葉に反応して/も
+├ minesweeper.js ... Discord 用のマインスイーパーを作成するモジュール
+└ randomConversation.js ... 言葉に反応してランダムで返事を返すモジュール
 data/ ... 保存データ
 ├ conversation.json ... 登録済みの反応する言葉一覧
 ├ gachaReply.json ... ガチャ言葉一覧
@@ -63,9 +67,13 @@ npm install -g mocha
 mocha
 mocha test/memberinfo.test.js
 mocha test/randomConversation.test.js
+mocha test/gachaReply.test.js
+mocha test/minesweeper.test.js
   // or
 npm install -g jest-cli
 jest
 jest test/memberinfo.test.js
 jest test/randomConversation.test.js
+jest test/gachaReply.test.js
+jest test/minesweeper.test.js
 ```
