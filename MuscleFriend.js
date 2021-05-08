@@ -21,6 +21,7 @@ const util = require('./modules/util.js');
 const randomReply = require('./modules/randomReply.js');
 const memberInfo = require('./modules/memberInfo.js');
 const gachaReply = require('./modules/gachaReply.js');
+const minesweeper = require('./modules/minesweeper.js');
 
 /** token */
 const token = process.env.BOT_TOKEN;
@@ -395,13 +396,18 @@ bot.registerCommand("roulette", (msg, args) => {
         })
         .then(() => {
             return bot.sendChannelTyping(msg.channel.id).then(() => {
-                let sleepTime = (Math.floor(Math.random() * 35) + 20) * 100; //ms 3.5~5.5s
+                let sleepTime = (Math.floor(Math.random() * 25) + 10) * 100; //ms 2.5~3.5s
                 console.log(sleepTime)
                 return util.sleep(sleepTime)
             })
         })
         .then(() => {
-            sendMessage(msg.channel.id, 'ジャンッ　クリック→||             ' + util.getRandom(args) + '          ||')
+
+            // 最大文字数のものを取得
+            let maxArgsLength = Math.max(...args.map((d) => { return d.length }))
+            let win = util.getRandom(args)
+            let margin = (maxArgsLength - win.length) / 2
+            sendMessage(msg.channel.id, 'ジャンッ　クリック→||　　　' + '　'.repeat(margin) + win + '　'.repeat(margin) + '　　　||')
         })
 
 }, {
@@ -409,6 +415,41 @@ bot.registerCommand("roulette", (msg, args) => {
     description: "ルーレットします。",
     fullDescription: "スペース区切りの引数をもとにルーレット形式で 1 つ選択します。",
     usage: "",
+});
+
+
+
+// **************
+// マインスイーパー
+// **************
+bot.registerCommand("mine", (msg, args) => {
+    if (!(args.length == 0 || args.length == 1 || args.length == 3)) {
+        msg.addReaction('✖')
+        return `<@!${msg.author.id}> ` + "`使い方: [$mine 引数なし | 爆弾数 | 横の数 縦の数 爆弾数]"
+    }
+
+
+    let options = {
+        width: args.length == 3 ? args[0] * 1 : 8,
+        height: args.length == 3 ? args[1] * 1 : 8,
+        bomb: args.length == 3 ? args[2] * 1 : (args.length == 1 ? args[0] * 1 : 8)
+    }
+
+    sendMessage(msg.channel.id, `マインスイーパー作成します [${options.width}x${options.height} 爆弾数:${options.bomb}]`)
+        .then(() => {
+            return bot.sendChannelTyping(msg.channel.id).then(() => {
+                return util.sleep(0.3)
+            })
+        })
+        .then(() => {
+            sendMessage(msg.channel.id, minesweeper.generate(options.width, options.height, options.bomb))
+        })
+
+}, {
+    argsRequired: false,
+    description: "マインスイーパーを作成します",
+    fullDescription: "マインスイーパーを作成します。",
+    usage: "[[width] [height]] [爆弾の数] （引数1個の場合は 8x8 で爆弾数を変更可、引数 3 個の場合は　横・縦・爆弾数）",
 });
 
 
