@@ -1,7 +1,6 @@
 require('dotenv').config();
 const fs = require("fs");
 const moment = require("moment");
-const randomReply = require('./randomReply.js');
 const util = require('./util.js');
 var AWS = require("aws-sdk");
 const fileName = 'gachaReply.json';
