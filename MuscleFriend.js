@@ -327,48 +327,50 @@ bot.registerCommand("trainingchecking", (msg, args) => {
     ],
 });
 
-// **************
-// AmongUs Darts (狂人決定)
-// **************
-bot.registerCommand("darts", (msg, args) => {
-    // 言った人がボイスちゃんねるにいるか
-    if (msg.member.guild.voiceStates.size == 0) {
-        msg.addReaction('✖')
-        return `<@!${msg.author.id}> ` + "ボイスチャンネルに入ってね！"
-    }
+//TODO trainingdelete
 
-    //ボイスチャンネルのメンバー一覧取得
-    let voiceStateId = Array.from(msg.member.guild.voiceStates.keys())[0];
-    let voiceChannelId = msg.member.guild.voiceStates.get(voiceStateId).channelID
-    let voiceChannel = bot.getChannel(voiceChannelId)
-    let voiceMembers = voiceChannel.voiceMembers
-    let voiceMembersArray = Array.from(voiceMembers.keys())
+// // **************
+// // AmongUs Darts (狂人決定)
+// // **************
+// bot.registerCommand("darts", (msg, args) => {
+//     // 言った人がボイスちゃんねるにいるか
+//     if (msg.member.guild.voiceStates.size == 0) {
+//         msg.addReaction('✖')
+//         return `<@!${msg.author.id}> ` + "ボイスチャンネルに入ってね！"
+//     }
 
-    // Dart
-    let minion = util.getRandom(voiceMembersArray)
-    console.log(`This time minion is: ${minion} ${voiceMembers.get(minion).user.username}`)
+//     //ボイスチャンネルのメンバー一覧取得
+//     let voiceStateId = Array.from(msg.member.guild.voiceStates.keys())[0];
+//     let voiceChannelId = msg.member.guild.voiceStates.get(voiceStateId).channelID
+//     let voiceChannel = bot.getChannel(voiceChannelId)
+//     let voiceMembers = voiceChannel.voiceMembers
+//     let voiceMembersArray = Array.from(voiceMembers.keys())
 
-    //みんなに DM を送る
-    voiceMembersArray.forEach(async (who) => {
-        let dmMsg = '今回はちがいます！😊'
-        if (who == minion) {
-            dmMsg = `${voiceMembers.get(minion).user.username}さん、狂人 😈 になりました！`
-        }
-        bot.getDMChannel(who).then((privateChannel) => {
-            bot.createMessage(privateChannel.id, dmMsg)
-        }, () => {
-            console.log(`DM Channel 取得失敗 [id: ${who}]`)
-        })
-    })
+//     // Dart
+//     let minion = util.getRandom(voiceMembersArray)
+//     console.log(`This time minion is: ${minion} ${voiceMembers.get(minion).user.username}`)
 
-    bot.createMessage(msg.channel.id, '全員に DM を送りました。内容を確認してね。')
+//     //みんなに DM を送る
+//     voiceMembersArray.forEach(async (who) => {
+//         let dmMsg = '今回はちがいます！😊'
+//         if (who == minion) {
+//             dmMsg = `${voiceMembers.get(minion).user.username}さん、狂人 😈 になりました！`
+//         }
+//         bot.getDMChannel(who).then((privateChannel) => {
+//             bot.createMessage(privateChannel.id, dmMsg)
+//         }, () => {
+//             console.log(`DM Channel 取得失敗 [id: ${who}]`)
+//         })
+//     })
 
-}, {
-    argsRequired: false,
-    description: "AmongUs で狂人に DM します",
-    fullDescription: "コマンドを打った人が入っているボイスチャンネルの一人を狂人とし、 DM を送ります。",
-    usage: "",
-});
+//     bot.createMessage(msg.channel.id, '全員に DM を送りました。内容を確認してね。')
+
+// }, {
+//     argsRequired: false,
+//     description: "AmongUs で狂人に DM します",
+//     fullDescription: "コマンドを打った人が入っているボイスチャンネルの一人を狂人とし、 DM を送ります。",
+//     usage: "",
+// });
 
 
 
@@ -561,19 +563,19 @@ bot.on("messageCreate", async msg => {
                 // チャンネルのときのみ
 
                 // 勝手に反応
-                if (msg.content.match(/^草$/)) {
-                    if (Math.random() < 0.2) sendMessage(msg.channel.id, "草");
-                } else if (msg.content.match(/^えらい！/)) {
-                    if (Math.random() < 0.2) sendMessage(msg.channel.id, "えらい！");
-                } else if (msg.content.match(/(?:ｗ|（笑）|\(笑\))/g)) {
-                    if (Math.random() < 0.2) sendMessage(msg.channel.id, "ｗｗｗ");
-                } else if (msg.content.match(/(?:へぇ|へー)/)) {
-                    if (Math.random() < 0.2) sendMessage(msg.channel.id, "へぇ");
-                } else if (msg.content.match(/は？/)) {
-                    if (Math.random() < 0.2) sendMessage(msg.channel.id, "どしたの？");
-                } else {
-                    if (Math.random() < 0.01) sendMessage(msg.channel.id, gachaReply.getReply());
-                }
+                // if (msg.content.match(/^草$/)) {
+                //     if (Math.random() < 0.2) sendMessage(msg.channel.id, "草");
+                // } else if (msg.content.match(/^えらい！/)) {
+                //     if (Math.random() < 0.2) sendMessage(msg.channel.id, "えらい！");
+                // } else if (msg.content.match(/(?:ｗ|（笑）|\(笑\))/g)) {
+                //     if (Math.random() < 0.2) sendMessage(msg.channel.id, "ｗｗｗ");
+                // } else if (msg.content.match(/(?:へぇ|へー)/)) {
+                //     if (Math.random() < 0.2) sendMessage(msg.channel.id, "へぇ");
+                // } else if (msg.content.match(/は？/)) {
+                //     if (Math.random() < 0.2) sendMessage(msg.channel.id, "どしたの？");
+                // } else {
+                // if (Math.random() < 0.01) sendMessage(msg.channel.id, gachaReply.getReply());
+                // }
             }
 
         }
