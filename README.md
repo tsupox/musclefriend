@@ -15,6 +15,7 @@
 - 時々勝手に喋ります (1% の割合)
 - 与えられた候補内でルーレットをします
 - マインスイーパーを作成します
+- 発言数をカウントします（キリ番でコメント）
 
 ## How to install
 ```
@@ -65,15 +66,17 @@ npm test
   // or
 npm install -g mocha
 mocha
-mocha test/memberinfo.test.js
-mocha test/randomConversation.test.js
 mocha test/gachaReply.test.js
+mocha test/memberRank.test.js
+mocha test/memberinfo.test.js
 mocha test/minesweeper.test.js
+mocha test/randomReply.test.js
   // or
 npm install -g jest-cli
 jest
 jest test/memberinfo.test.js
-jest test/randomConversation.test.js
-jest test/gachaReply.test.js
+jest test/memberRank.test.js
+jest test/randomReply.test.js
 jest test/minesweeper.test.js
+jest test/gachaReply.test.js
 ```

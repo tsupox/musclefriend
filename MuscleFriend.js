@@ -22,6 +22,7 @@ const randomReply = require('./modules/randomReply.js');
 const memberInfo = require('./modules/memberInfo.js');
 const gachaReply = require('./modules/gachaReply.js');
 const minesweeper = require('./modules/minesweeper.js');
+const memberRank = require('./modules/memberRank.js');
 
 /** token */
 const token = process.env.BOT_TOKEN;
@@ -493,6 +494,7 @@ bot.on("ready", () => {
     memberInfo.init();
     randomReply.init();
     gachaReply.init();
+    memberRank.init();
     console.log("Ready...");
 });
 
@@ -503,11 +505,20 @@ bot.on("messageCreate", async msg => {
     if (!msg.author.bot) {
         // BOT 以外
 
+        let mention = msg.mentions.length > 0 && msg.mentions[0].id === bot_id;
+        let privateMsg = msg.channel.hasOwnProperty('recipient');
+
+        // カウント
+        if (!privateMsg) {
+            // DM 以外をカウント
+            let currentCount = memberRank.increase(msg.author.id, msg.author.username)
+            if (currentCount % 10000 == 0) {
+                sendMessage(msg.channel.id, `<@!${msg.author.id}> 今の発言が ${currentCount} 回目の発言でした！ (since 2021/7/8)`, 0)
+            }
+        }
+
         if (msg.content.substring(0, 1) !== '$') {
             // コマンド以外
-
-            let mention = msg.mentions.length > 0 && msg.mentions[0].id === bot_id;
-            let privateMsg = msg.channel.hasOwnProperty('recipient');
 
             let content = msg.content;
             if (mention) {
