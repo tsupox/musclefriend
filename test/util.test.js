@@ -31,4 +31,9 @@ describe('util.js', async () => {
             expect(result).to.be.oneOf(['a', 'b', 'c', 'd', 'e'])
         });
     });
+    describe('backupJson()', () => {
+        it('バックアップ', () => {
+            // 各モジュールでテスト
+        });
+    });
 });

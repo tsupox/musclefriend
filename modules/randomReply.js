@@ -213,27 +213,9 @@ let randomReply = {
     },
 
     backupJson: () => {
-        if (process.env.AWS_ACCESS_KEY_ID) {
-            // S3 Backup
-            let s3 = new AWS.S3();
-            let params = {
-                Body: JSON.stringify(randomReply.database),
-                Bucket: process.env.AWS_S3_BUCKET,
-                Key: fileName,
-            };
-            s3.putObject(params, function (err, data) {
-                if (err) console.log(err, err.stack);
-            }).promise()
-        }
-        // 従来のバックアップ
-        let now = moment();
-        let backupFileName = dataFile + "_" + now.format("YYYYMMDDHHmm");
-        fs.writeFileSync(backupFileName, JSON.stringify(randomReply.database))
-
-        //TODO: 一週間前のは削除
-
-        return backupFileName;
-    }
+        let aws_config = { access_key: process.env.AWS_ACCESS_KEY_ID, s3_bucket: process.env.AWS_S3_BUCKET }
+        return util.backupJson(randomReply.database, fileName, dataFile, aws_config)
+    },
 
 }
 
