@@ -455,6 +455,23 @@ bot.registerCommand("mine", (msg, args) => {
     usage: "[[width] [height]] [爆弾の数] （引数1個の場合は 8x8 で爆弾数を変更可、引数 3 個の場合は　横・縦・爆弾数）",
 });
 
+// **************
+// 発言回数
+// **************
+bot.registerCommand("counter", (msg, args) => {
+    let currentCount = memberRank.getCounter(msg.author.id)
+    return `<@!${msg.author.id}> 今の発言で ${currentCount} 回目の発言でした！ (since 2021/7/8)`
+}, {
+    argsRequired: false,
+    description: "発言回数を確認します",
+    fullDescription: "発言回数を確認します。",
+    usage: "",
+    reactionButtonTimeout: 600000,
+    reactionButtons: [
+        deleteCommandResult
+    ],
+});
+
 
 // BOT からメッセージ送信
 const sendMessage = (channelId, message, sleepTime) => {
@@ -512,7 +529,7 @@ bot.on("messageCreate", async msg => {
         if (!privateMsg) {
             // DM 以外をカウント
             let currentCount = memberRank.increase(msg.author.id, msg.author.username)
-            if (currentCount % 10000 == 0) {
+            if (currentCount % 1000 == 0) {
                 sendMessage(msg.channel.id, `<@!${msg.author.id}> 今の発言が ${currentCount} 回目の発言でした！ (since 2021/7/8)`, 0)
             }
         }
